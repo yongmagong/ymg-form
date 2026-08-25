@@ -20,6 +20,8 @@ export async function POST(request, { params }) {
   const regionValue = region === '기타' && regionEtc ? `기타(${regionEtc})` : region;
 
   await appendApplyResponse({
+    eventId: event.id,
+    eventTitle: event.title,
     name,
     phone,
     org: orgValue,

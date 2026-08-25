@@ -65,7 +65,11 @@ export default function EventDetailPage() {
 
   if (!event) return <p className="text-gray-400">불러오는 중...</p>;
 
+  const linkedSurvey = surveys.find((s) => s.id === linkedSurveyId);
   const qrSrc = publicUrl ? `/api/qrcode?url=${encodeURIComponent(publicUrl)}` : '';
+  const surveyUrl =
+    typeof window !== 'undefined' && linkedSurveyId ? `${window.location.origin}/survey/${linkedSurveyId}` : '';
+  const surveyQrSrc = surveyUrl ? `/api/qrcode?url=${encodeURIComponent(surveyUrl)}` : '';
 
   return (
     <div className="space-y-6">
@@ -135,15 +139,36 @@ export default function EventDetailPage() {
           </div>
         </div>
 
-        <div className="card space-y-3 text-center">
-          <p className="font-semibold text-sm">배포용 QR코드</p>
-          {qrSrc && <img src={qrSrc} alt="QR" className="w-full rounded-xl border" />}
-          <a href={qrSrc} download={`${title}_신청서_QR.png`} className="btn-primary block">
-            QR 다운로드
-          </a>
-          <a href={publicUrl} target="_blank" rel="noreferrer" className="text-xs text-brand-600 break-all block">
-            {publicUrl}
-          </a>
+        <div className="card space-y-5 text-center">
+          <div className="space-y-3">
+            <p className="font-semibold text-sm">참가신청서 QR코드</p>
+            {qrSrc && <img src={qrSrc} alt="참가신청서 QR" className="w-full rounded-xl border" />}
+            <a href={qrSrc} download={`${title}_신청서_QR.png`} className="btn-primary block">
+              신청서 QR 다운로드
+            </a>
+            <a href={publicUrl} target="_blank" rel="noreferrer" className="text-xs text-brand-600 break-all block">
+              {publicUrl}
+            </a>
+          </div>
+
+          {linkedSurveyId && (
+            <div className="border-t pt-5 space-y-3">
+              <p className="font-semibold text-sm">만족도 설문 QR코드</p>
+              {surveyQrSrc && <img src={surveyQrSrc} alt="만족도 설문 QR" className="w-full rounded-xl border" />}
+              <a href={surveyQrSrc} download={`${linkedSurvey?.title || title + '_만족도'}_QR.png`} className="btn-primary block">
+                만족도 QR 다운로드
+              </a>
+              <a href={surveyUrl} target="_blank" rel="noreferrer" className="text-xs text-brand-600 break-all block">
+                {surveyUrl}
+              </a>
+            </div>
+          )}
+
+          {!linkedSurveyId && (
+            <p className="text-xs text-gray-400 border-t pt-4">
+              연결된 만족도 설문조사가 없습니다.
+            </p>
+          )}
         </div>
       </div>
     </div>
