@@ -3,14 +3,14 @@ import { isAuthedRequest } from '@/lib/auth';
 import { SURVEYS_TAB, getConfigById, upsertConfig, deleteConfig } from '@/lib/sheets';
 
 export async function GET(request, { params }) {
-  if (!isAuthedRequest(request)) return NextResponse.json({ error: '인증 필요' }, { status: 401 });
+  if (!(await isAuthedRequest(request))) return NextResponse.json({ error: '인증 필요' }, { status: 401 });
   const survey = await getConfigById(SURVEYS_TAB, params.id);
   if (!survey) return NextResponse.json({ error: '찾을 수 없음' }, { status: 404 });
   return NextResponse.json({ survey });
 }
 
 export async function PUT(request, { params }) {
-  if (!isAuthedRequest(request)) return NextResponse.json({ error: '인증 필요' }, { status: 401 });
+  if (!(await isAuthedRequest(request))) return NextResponse.json({ error: '인증 필요' }, { status: 401 });
   const existing = await getConfigById(SURVEYS_TAB, params.id);
   if (!existing) return NextResponse.json({ error: '찾을 수 없음' }, { status: 404 });
   const body = await request.json();
@@ -35,7 +35,7 @@ export async function PUT(request, { params }) {
 }
 
 export async function DELETE(request, { params }) {
-  if (!isAuthedRequest(request)) return NextResponse.json({ error: '인증 필요' }, { status: 401 });
+  if (!(await isAuthedRequest(request))) return NextResponse.json({ error: '인증 필요' }, { status: 401 });
   await deleteConfig(SURVEYS_TAB, params.id);
   return NextResponse.json({ ok: true });
 }

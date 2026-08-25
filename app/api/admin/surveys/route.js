@@ -4,13 +4,13 @@ import { isAuthedRequest } from '@/lib/auth';
 import { SURVEYS_TAB, listConfig, upsertConfig } from '@/lib/sheets';
 
 export async function GET(request) {
-  if (!isAuthedRequest(request)) return NextResponse.json({ error: '인증 필요' }, { status: 401 });
+  if (!(await isAuthedRequest(request))) return NextResponse.json({ error: '인증 필요' }, { status: 401 });
   const surveys = await listConfig(SURVEYS_TAB);
   return NextResponse.json({ surveys });
 }
 
 export async function POST(request) {
-  if (!isAuthedRequest(request)) return NextResponse.json({ error: '인증 필요' }, { status: 401 });
+  if (!(await isAuthedRequest(request))) return NextResponse.json({ error: '인증 필요' }, { status: 401 });
   const body = await request.json();
   const survey = {
     id: crypto.randomUUID(),

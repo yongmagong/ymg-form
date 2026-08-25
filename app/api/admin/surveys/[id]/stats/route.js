@@ -3,7 +3,7 @@ import { isAuthedRequest } from '@/lib/auth';
 import { SURVEYS_TAB, getConfigById, getSurveyResponses } from '@/lib/sheets';
 
 export async function GET(request, { params }) {
-  if (!isAuthedRequest(request)) return NextResponse.json({ error: '인증 필요' }, { status: 401 });
+  if (!(await isAuthedRequest(request))) return NextResponse.json({ error: '인증 필요' }, { status: 401 });
   const survey = await getConfigById(SURVEYS_TAB, params.id);
   if (!survey) return NextResponse.json({ error: '찾을 수 없음' }, { status: 404 });
 
