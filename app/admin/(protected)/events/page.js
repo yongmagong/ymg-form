@@ -9,11 +9,19 @@ export default function EventsPage() {
   const [title, setTitle] = useState('');
   const [sections, setSections] = useState([{ label: '소개', content: '' }]);
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
 
   async function load() {
-    const res = await fetch('/api/admin/events');
-    const data = await res.json();
-    setEvents(data.events || []);
+    setError('');
+    try {
+      const res = await fetch('/api/admin/events');
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || '신청서 목록을 불러오지 못했습니다.');
+      setEvents(data.events || []);
+    } catch (err) {
+      setEvents([]);
+      setError(err.message);
+    }
   }
 
   useEffect(() => {
@@ -35,12 +43,18 @@ export default function EventsPage() {
   async function createEvent(e) {
     e.preventDefault();
     setSaving(true);
-    await fetch('/api/admin/events', {
+    setError('');
+    const res = await fetch('/api/admin/events', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ title, sections: sections.filter((s) => s.label || s.content) }),
     });
+    const data = await res.json();
     setSaving(false);
+    if (!res.ok) {
+      setError(data.error || '신청서를 만들지 못했습니다.');
+      return;
+    }
     setShowForm(false);
     setTitle('');
     setSections([{ label: '소개', content: '' }]);
@@ -110,6 +124,13 @@ export default function EventsPage() {
             {saving ? '저장 중...' : '신청서 만들기'}
           </button>
         </form>
+      )}
+
+      {error && (
+        <div className="card border-red-100 bg-red-50 text-red-700 text-sm leading-relaxed">
+          <p className="font-bold mb-1">불러오지 못했습니다.</p>
+          <p>{error}</p>
+        </div>
       )}
 
       <div className="space-y-3">

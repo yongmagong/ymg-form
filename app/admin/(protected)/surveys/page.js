@@ -12,11 +12,19 @@ export default function SurveysPage() {
   const [intro, setIntro] = useState('');
   const [questions, setQuestions] = useState([]);
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
 
   async function load() {
-    const res = await fetch('/api/admin/surveys');
-    const data = await res.json();
-    setSurveys(data.surveys || []);
+    setError('');
+    try {
+      const res = await fetch('/api/admin/surveys');
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || '설문 목록을 불러오지 못했습니다.');
+      setSurveys(data.surveys || []);
+    } catch (err) {
+      setSurveys([]);
+      setError(err.message);
+    }
   }
 
   useEffect(() => {
@@ -33,7 +41,8 @@ export default function SurveysPage() {
   async function createSurvey(e) {
     e.preventDefault();
     setSaving(true);
-    await fetch('/api/admin/surveys', {
+    setError('');
+    const res = await fetch('/api/admin/surveys', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -42,7 +51,12 @@ export default function SurveysPage() {
         questions: questions.map((q) => ({ ...q, options: (q.options || []).map((o) => o.trim()).filter(Boolean) })),
       }),
     });
+    const data = await res.json();
     setSaving(false);
+    if (!res.ok) {
+      setError(data.error || '설문조사를 만들지 못했습니다.');
+      return;
+    }
     setShowForm(false);
     setTitle('');
     setIntro('');
@@ -85,6 +99,13 @@ export default function SurveysPage() {
             {saving ? '저장 중...' : '설문 만들기'}
           </button>
         </form>
+      )}
+
+      {error && (
+        <div className="card border-red-100 bg-red-50 text-red-700 text-sm leading-relaxed">
+          <p className="font-bold mb-1">불러오지 못했습니다.</p>
+          <p>{error}</p>
+        </div>
       )}
 
       <div className="space-y-3">
