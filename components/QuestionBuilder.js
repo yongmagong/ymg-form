@@ -208,6 +208,19 @@ export default function QuestionBuilder({ questions, setQuestions }) {
             </div>
           )}
 
+          {(q.type === 'date' || q.type === 'time') && (
+            <div className="rounded-lg border border-gray-100 bg-gray-50 p-3">
+              <label className="block text-xs font-semibold text-gray-500 mb-2">
+                응답 화면 미리보기
+              </label>
+              <input
+                type={q.type}
+                className="input-base bg-white max-w-xs"
+                aria-label={q.type === 'date' ? '날짜 선택 미리보기' : '시간 선택 미리보기'}
+              />
+            </div>
+          )}
+
           <div className="flex items-center justify-between gap-3 text-sm border-t border-gray-100 pt-3">
             <label className="flex items-center gap-2 text-gray-500">
               <input
