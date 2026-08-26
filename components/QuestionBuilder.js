@@ -32,6 +32,14 @@ function newQuestion(type = 'single') {
   };
 }
 
+function cloneQuestion(question) {
+  return {
+    ...JSON.parse(JSON.stringify(question)),
+    id: `q_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+    text: question.text ? `${question.text} 복사본` : '',
+  };
+}
+
 export default function QuestionBuilder({ questions, setQuestions }) {
   useEffect(() => {
     setQuestions((prev) => {
@@ -63,6 +71,13 @@ export default function QuestionBuilder({ questions, setQuestions }) {
   }
   function remove(i) {
     setQuestions((prev) => prev.filter((_, idx) => idx !== i));
+  }
+  function duplicate(i) {
+    setQuestions((prev) => {
+      const arr = [...prev];
+      arr.splice(i + 1, 0, cloneQuestion(prev[i]));
+      return arr;
+    });
   }
   function move(i, dir) {
     setQuestions((prev) => {
@@ -233,6 +248,9 @@ export default function QuestionBuilder({ questions, setQuestions }) {
               필수 응답
             </label>
             <div className="flex gap-2 text-gray-400">
+              <button type="button" onClick={() => duplicate(i)} className="btn-secondary px-3 py-1.5 text-xs">
+                복사
+              </button>
               <button type="button" onClick={() => move(i, -1)} className="btn-secondary px-3 py-1.5 text-xs">
                 위로
               </button>
