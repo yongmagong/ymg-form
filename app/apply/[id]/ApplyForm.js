@@ -6,6 +6,7 @@ import { cloneDefaultApplyTemplate } from '@/lib/defaultApply';
 function Field({ question, value, onChange }) {
   const required = question.required ? ' *' : '';
   const selectedValues = Array.isArray(value) ? value : [];
+  const isPhone = question.id === 'phone' || question.text.includes('연락처') || question.text.includes('전화');
 
   function toggleMulti(option) {
     if (selectedValues.includes(option)) {
@@ -70,10 +71,25 @@ function Field({ question, value, onChange }) {
       </div>
     );
   }
+  function formatPhone(rawValue) {
+    const digits = rawValue.replace(/\D/g, '').slice(0, 11);
+    if (digits.length <= 3) return digits;
+    if (digits.length <= 7) return `${digits.slice(0, 3)}-${digits.slice(3)}`;
+    return `${digits.slice(0, 3)}-${digits.slice(3, 7)}-${digits.slice(7)}`;
+  }
+
   return (
     <div>
       <label className="block font-semibold mb-2">{question.text}{required}</label>
-      <input className="input-base" value={value || ''} onChange={(e) => onChange(e.target.value)} required={question.required} />
+      <input
+        className="input-base"
+        type={isPhone ? 'tel' : 'text'}
+        inputMode={isPhone ? 'numeric' : undefined}
+        autoComplete={isPhone ? 'tel' : undefined}
+        value={value || ''}
+        onChange={(e) => onChange(isPhone ? formatPhone(e.target.value) : e.target.value)}
+        required={question.required}
+      />
     </div>
   );
 }
