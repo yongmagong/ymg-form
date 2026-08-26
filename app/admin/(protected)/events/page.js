@@ -5,8 +5,10 @@ import Link from 'next/link';
 
 export default function EventsPage() {
   const [events, setEvents] = useState(null);
+  const [currentUser, setCurrentUser] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [title, setTitle] = useState('');
+  const [ownerName, setOwnerName] = useState('');
   const [imageUrl, setImageUrl] = useState('');
   const [sections, setSections] = useState([{ label: '소개', content: '' }]);
   const [saving, setSaving] = useState(false);
@@ -19,6 +21,8 @@ export default function EventsPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || '신청서 목록을 불러오지 못했습니다.');
       setEvents(data.events || []);
+      setCurrentUser(data.currentUser || null);
+      setOwnerName((prev) => prev || data.currentUser?.displayName || '');
     } catch (err) {
       setEvents([]);
       setError(err.message);
@@ -55,7 +59,7 @@ export default function EventsPage() {
     const res = await fetch('/api/admin/events', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title, imageUrl, sections: sections.filter((s) => s.label || s.content) }),
+      body: JSON.stringify({ title, ownerName, imageUrl, sections: sections.filter((s) => s.label || s.content) }),
     });
     const data = await res.json();
     setSaving(false);
@@ -65,12 +69,59 @@ export default function EventsPage() {
     }
     setShowForm(false);
     setTitle('');
+    setOwnerName(currentUser?.displayName || '');
     setImageUrl('');
     setSections([{ label: '소개', content: '' }]);
     load();
   }
 
   if (!events) return <p className="text-gray-400">불러오는 중...</p>;
+
+  async function copyEvent(id) {
+    setError('');
+    const res = await fetch('/api/admin/events', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ copyFromId: id, ownerName: currentUser?.displayName || ownerName }),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      setError(data.error || '신청서를 복사하지 못했습니다.');
+      return;
+    }
+    load();
+  }
+
+  const myEvents = events.filter((ev) => ev.ownerEmail && currentUser?.email && ev.ownerEmail === currentUser.email);
+  const otherEvents = events.filter((ev) => !ev.ownerEmail || !currentUser?.email || ev.ownerEmail !== currentUser.email);
+
+  function EventList({ items, showCopy }) {
+    if (items.length === 0) return <p className="text-gray-400 text-sm">목록이 없습니다.</p>;
+    return (
+      <div className="space-y-3">
+        {items.map((ev) => (
+          <div key={ev.id} className="card flex items-center justify-between gap-4 hover:shadow-md transition-shadow">
+            <Link href={`/admin/events/${ev.id}`} className="min-w-0 flex-1 block">
+              <div className="flex flex-wrap items-center gap-2">
+                <p className="font-semibold truncate">{ev.title}</p>
+                <span className="text-xs rounded-full bg-brand-50 text-brand-700 px-2 py-1">
+                  담당 {ev.ownerName || ev.createdByName || '미지정'}
+                </span>
+              </div>
+              <p className="text-xs text-gray-400 mt-1">{new Date(ev.createdAt).toLocaleDateString('ko-KR')}</p>
+            </Link>
+            {showCopy ? (
+              <button type="button" onClick={() => copyEvent(ev.id)} className="btn-secondary text-xs whitespace-nowrap">
+                내 것으로 복사
+              </button>
+            ) : (
+              <span className="text-brand-600 text-sm font-medium whitespace-nowrap">자세히 →</span>
+            )}
+          </div>
+        ))}
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -90,6 +141,17 @@ export default function EventsPage() {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="예: 2026 주민자치 조력가양성교육"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold mb-1">담당자 이름</label>
+            <input
+              className="input-base max-w-sm"
+              value={ownerName}
+              onChange={(e) => setOwnerName(e.target.value)}
+              placeholder="예: 홍길동"
               required
             />
           </div>
@@ -163,17 +225,15 @@ export default function EventsPage() {
         </div>
       )}
 
-      <div className="space-y-3">
-        {events.length === 0 && <p className="text-gray-400">아직 만들어진 신청서가 없습니다.</p>}
-        {events.map((ev) => (
-          <Link key={ev.id} href={`/admin/events/${ev.id}`} className="card flex items-center justify-between hover:shadow-md transition-shadow block">
-            <div>
-              <p className="font-semibold">{ev.title}</p>
-              <p className="text-xs text-gray-400">{new Date(ev.createdAt).toLocaleDateString('ko-KR')}</p>
-            </div>
-            <span className="text-brand-600 text-sm font-medium">자세히 →</span>
-          </Link>
-        ))}
+      <div className="space-y-6">
+        <section className="space-y-3">
+          <h2 className="text-sm font-bold text-gray-600">내 신청서</h2>
+          <EventList items={myEvents} />
+        </section>
+        <section className="space-y-3">
+          <h2 className="text-sm font-bold text-gray-600">동료 신청서</h2>
+          <EventList items={otherEvents} showCopy />
+        </section>
       </div>
     </div>
   );

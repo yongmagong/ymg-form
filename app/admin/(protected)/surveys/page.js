@@ -7,8 +7,10 @@ import { cloneDefaultSurveyTemplate } from '@/lib/defaultSurvey';
 
 export default function SurveysPage() {
   const [surveys, setSurveys] = useState(null);
+  const [currentUser, setCurrentUser] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [title, setTitle] = useState('');
+  const [ownerName, setOwnerName] = useState('');
   const [intro, setIntro] = useState('');
   const [questions, setQuestions] = useState([]);
   const [saving, setSaving] = useState(false);
@@ -21,6 +23,8 @@ export default function SurveysPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || '설문 목록을 불러오지 못했습니다.');
       setSurveys(data.surveys || []);
+      setCurrentUser(data.currentUser || null);
+      setOwnerName((prev) => prev || data.currentUser?.displayName || '');
     } catch (err) {
       setSurveys([]);
       setError(err.message);
@@ -34,6 +38,7 @@ export default function SurveysPage() {
   function loadTemplate() {
     const t = cloneDefaultSurveyTemplate();
     setTitle(t.title);
+    setOwnerName((prev) => prev || currentUser?.displayName || '');
     setIntro(t.intro);
     setQuestions(t.questions);
   }
@@ -47,6 +52,7 @@ export default function SurveysPage() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         title,
+        ownerName,
         intro,
         questions: questions.map((q) => ({ ...q, options: (q.options || []).map((o) => o.trim()).filter(Boolean) })),
       }),
@@ -59,12 +65,59 @@ export default function SurveysPage() {
     }
     setShowForm(false);
     setTitle('');
+    setOwnerName(currentUser?.displayName || '');
     setIntro('');
     setQuestions([]);
     load();
   }
 
   if (!surveys) return <p className="text-gray-400">불러오는 중...</p>;
+
+  async function copySurvey(id) {
+    setError('');
+    const res = await fetch('/api/admin/surveys', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ copyFromId: id, ownerName: currentUser?.displayName || ownerName }),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      setError(data.error || '설문조사를 복사하지 못했습니다.');
+      return;
+    }
+    load();
+  }
+
+  const mySurveys = surveys.filter((sv) => sv.ownerEmail && currentUser?.email && sv.ownerEmail === currentUser.email);
+  const otherSurveys = surveys.filter((sv) => !sv.ownerEmail || !currentUser?.email || sv.ownerEmail !== currentUser.email);
+
+  function SurveyList({ items, showCopy }) {
+    if (items.length === 0) return <p className="text-gray-400 text-sm">목록이 없습니다.</p>;
+    return (
+      <div className="space-y-3">
+        {items.map((sv) => (
+          <div key={sv.id} className="card flex items-center justify-between gap-4 hover:shadow-md transition-shadow">
+            <Link href={`/admin/surveys/${sv.id}`} className="min-w-0 flex-1 block">
+              <div className="flex flex-wrap items-center gap-2">
+                <p className="font-semibold truncate">{sv.title}</p>
+                <span className="text-xs rounded-full bg-brand-50 text-brand-700 px-2 py-1">
+                  담당 {sv.ownerName || sv.createdByName || '미지정'}
+                </span>
+              </div>
+              <p className="text-xs text-gray-400 mt-1">질문 {sv.questions.length}개 · {new Date(sv.createdAt).toLocaleDateString('ko-KR')}</p>
+            </Link>
+            {showCopy ? (
+              <button type="button" onClick={() => copySurvey(sv.id)} className="btn-secondary text-xs whitespace-nowrap">
+                내 것으로 복사
+              </button>
+            ) : (
+              <span className="text-brand-600 text-sm font-medium whitespace-nowrap">자세히 →</span>
+            )}
+          </div>
+        ))}
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -84,6 +137,17 @@ export default function SurveysPage() {
             </button>
           </div>
           <input className="input-base" value={title} onChange={(e) => setTitle(e.target.value)} required />
+
+          <div>
+            <label className="block text-sm font-semibold mb-1">담당자 이름</label>
+            <input
+              className="input-base max-w-sm"
+              value={ownerName}
+              onChange={(e) => setOwnerName(e.target.value)}
+              placeholder="예: 홍길동"
+              required
+            />
+          </div>
 
           <div>
             <label className="block text-sm font-semibold mb-1">설문 소개</label>
@@ -108,17 +172,15 @@ export default function SurveysPage() {
         </div>
       )}
 
-      <div className="space-y-3">
-        {surveys.length === 0 && <p className="text-gray-400">아직 만들어진 설문이 없습니다.</p>}
-        {surveys.map((sv) => (
-          <Link key={sv.id} href={`/admin/surveys/${sv.id}`} className="card flex items-center justify-between hover:shadow-md transition-shadow block">
-            <div>
-              <p className="font-semibold">{sv.title}</p>
-              <p className="text-xs text-gray-400">질문 {sv.questions.length}개 · {new Date(sv.createdAt).toLocaleDateString('ko-KR')}</p>
-            </div>
-            <span className="text-brand-600 text-sm font-medium">자세히 →</span>
-          </Link>
-        ))}
+      <div className="space-y-6">
+        <section className="space-y-3">
+          <h2 className="text-sm font-bold text-gray-600">내 설문조사</h2>
+          <SurveyList items={mySurveys} />
+        </section>
+        <section className="space-y-3">
+          <h2 className="text-sm font-bold text-gray-600">동료 설문조사</h2>
+          <SurveyList items={otherSurveys} showCopy />
+        </section>
       </div>
     </div>
   );

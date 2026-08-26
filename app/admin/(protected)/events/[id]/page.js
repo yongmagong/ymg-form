@@ -11,6 +11,7 @@ export default function EventDetailPage() {
   const [event, setEvent] = useState(null);
   const [surveys, setSurveys] = useState([]);
   const [title, setTitle] = useState('');
+  const [ownerName, setOwnerName] = useState('');
   const [imageUrl, setImageUrl] = useState('');
   const [sections, setSections] = useState([]);
   const [questions, setQuestions] = useState([]);
@@ -31,6 +32,7 @@ export default function EventDetailPage() {
     const svData = await svRes.json();
     setEvent(evData.event);
     setTitle(evData.event.title);
+    setOwnerName(evData.event.ownerName || evData.event.createdByName || '');
     setImageUrl(evData.event.imageUrl || '');
     setSections(evData.event.sections || []);
     setQuestions(evData.event.questions || cloneDefaultApplyTemplate().questions);
@@ -66,6 +68,7 @@ export default function EventDetailPage() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         title,
+        ownerName,
         imageUrl,
         sections,
         questions: questions.map((q) => ({ ...q, options: (q.options || []).map((o) => o.trim()).filter(Boolean) })),
@@ -99,6 +102,16 @@ export default function EventDetailPage() {
           <div>
             <label className="block text-sm font-semibold mb-1">제목</label>
             <input className="input-base" value={title} onChange={(e) => setTitle(e.target.value)} />
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold mb-1">담당자 이름</label>
+            <input
+              className="input-base max-w-sm"
+              value={ownerName}
+              onChange={(e) => setOwnerName(e.target.value)}
+              placeholder="예: 홍길동"
+            />
           </div>
 
           <div>

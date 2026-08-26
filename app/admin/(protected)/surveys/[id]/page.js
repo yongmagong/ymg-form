@@ -10,6 +10,7 @@ export default function SurveyDetailPage() {
   const router = useRouter();
   const [survey, setSurvey] = useState(null);
   const [title, setTitle] = useState('');
+  const [ownerName, setOwnerName] = useState('');
   const [intro, setIntro] = useState('');
   const [questions, setQuestions] = useState([]);
   const [saving, setSaving] = useState(false);
@@ -24,6 +25,7 @@ export default function SurveyDetailPage() {
     const data = await res.json();
     setSurvey(data.survey);
     setTitle(data.survey.title);
+    setOwnerName(data.survey.ownerName || data.survey.createdByName || '');
     setIntro(data.survey.intro);
     setQuestions(data.survey.questions);
   }
@@ -39,6 +41,7 @@ export default function SurveyDetailPage() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         title,
+        ownerName,
         intro,
         questions: questions.map((q) => ({ ...q, options: (q.options || []).map((o) => o.trim()).filter(Boolean) })),
       }),
@@ -71,6 +74,15 @@ export default function SurveyDetailPage() {
           <div>
             <label className="block text-sm font-semibold mb-1">설문 제목</label>
             <input className="input-base" value={title} onChange={(e) => setTitle(e.target.value)} />
+          </div>
+          <div>
+            <label className="block text-sm font-semibold mb-1">담당자 이름</label>
+            <input
+              className="input-base max-w-sm"
+              value={ownerName}
+              onChange={(e) => setOwnerName(e.target.value)}
+              placeholder="예: 홍길동"
+            />
           </div>
           <div>
             <label className="block text-sm font-semibold mb-1">설문 소개</label>
