@@ -124,6 +124,14 @@ export default function SurveyRunner({ survey }) {
     }
   }
 
+  function confirmValue() {
+    if (step === total) {
+      submitAll(answers);
+    } else {
+      setStep((s) => s + 1);
+    }
+  }
+
   function confirmMulti() {
     if (step === total) {
       submitAll(answers);
@@ -187,7 +195,12 @@ export default function SurveyRunner({ survey }) {
         </p>
       </div>
 
-      <h2 className="text-lg font-bold leading-snug">{q.text}</h2>
+      <div className="space-y-3">
+        <h2 className="text-lg font-bold leading-snug">{q.text}</h2>
+        {q.imageUrl && (
+          <img src={q.imageUrl} alt="" className="max-h-80 w-full rounded-lg border object-contain bg-gray-50" />
+        )}
+      </div>
 
       {q.type === 'single' && <SingleButtons options={q.options} value={answers[q.id]} onPick={pickChoice} />}
       {q.type === 'multi' && (
@@ -206,22 +219,71 @@ export default function SurveyRunner({ survey }) {
           </button>
         </div>
       )}
+      {q.type === 'dropdown' && (
+        <div className="space-y-3">
+          <select
+            className="input-base"
+            value={answers[q.id] || ''}
+            onChange={(e) => setAnswers((prev) => ({ ...prev, [q.id]: e.target.value }))}
+          >
+            <option value="">선택하세요</option>
+            {(q.options || []).map((opt) => (
+              <option key={opt} value={opt}>
+                {opt}
+              </option>
+            ))}
+          </select>
+          <button
+            className="btn-primary w-full"
+            onClick={confirmValue}
+            disabled={submitting || (q.required && !answers[q.id])}
+          >
+            {step === total ? (submitting ? '제출 중...' : '제출하기') : '다음'}
+          </button>
+        </div>
+      )}
       {q.type === 'scale5' && (
         <ScaleButtons lowLabel={q.lowLabel} highLabel={q.highLabel} value={answers[q.id]} onPick={pickChoice} />
       )}
-      {q.type === 'text' && (
+      {(q.type === 'text' || q.type === 'textarea') && (
         <div className="space-y-3">
-          <textarea
-            className="input-base"
-            rows={4}
-            value={textDraft}
-            onChange={(e) => setTextDraft(e.target.value)}
-            placeholder={q.required ? '' : '(선택 사항)'}
-          />
+          {q.type === 'textarea' ? (
+            <textarea
+              className="input-base min-h-28"
+              rows={4}
+              value={textDraft}
+              onChange={(e) => setTextDraft(e.target.value)}
+              placeholder={q.required ? '' : '(선택 사항)'}
+            />
+          ) : (
+            <input
+              className="input-base"
+              value={textDraft}
+              onChange={(e) => setTextDraft(e.target.value)}
+              placeholder={q.required ? '' : '(선택 사항)'}
+            />
+          )}
           <button
             className="btn-primary w-full"
             onClick={confirmText}
             disabled={submitting || (q.required && !textDraft.trim())}
+          >
+            {step === total ? (submitting ? '제출 중...' : '제출하기') : '다음'}
+          </button>
+        </div>
+      )}
+      {(q.type === 'date' || q.type === 'time') && (
+        <div className="space-y-3">
+          <input
+            className="input-base"
+            type={q.type}
+            value={answers[q.id] || ''}
+            onChange={(e) => setAnswers((prev) => ({ ...prev, [q.id]: e.target.value }))}
+          />
+          <button
+            className="btn-primary w-full"
+            onClick={confirmValue}
+            disabled={submitting || (q.required && !answers[q.id])}
           >
             {step === total ? (submitting ? '제출 중...' : '제출하기') : '다음'}
           </button>

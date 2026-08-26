@@ -8,6 +8,17 @@ function Field({ question, value, onChange }) {
   const selectedValues = Array.isArray(value) ? value : [];
   const isPhone = question.id === 'phone' || question.text.includes('연락처') || question.text.includes('전화');
 
+  function Label() {
+    return (
+      <>
+        <label className="block font-semibold mb-2">{question.text}{required}</label>
+        {question.imageUrl && (
+          <img src={question.imageUrl} alt="" className="mb-3 max-h-80 w-full rounded-lg border object-contain bg-gray-50" />
+        )}
+      </>
+    );
+  }
+
   function toggleMulti(option) {
     if (selectedValues.includes(option)) {
       onChange(selectedValues.filter((item) => item !== option));
@@ -19,7 +30,7 @@ function Field({ question, value, onChange }) {
   if (question.type === 'single') {
     return (
       <div>
-        <label className="block font-semibold mb-2">{question.text}{required}</label>
+        <Label />
         <div className="grid sm:grid-cols-2 gap-2">
           {(question.options || []).map((opt) => (
             <button
@@ -38,7 +49,7 @@ function Field({ question, value, onChange }) {
   if (question.type === 'multi') {
     return (
       <div>
-        <label className="block font-semibold mb-2">{question.text}{required}</label>
+        <Label />
         <div className="space-y-2">
           {(question.options || []).map((opt) => (
             <label
@@ -60,9 +71,27 @@ function Field({ question, value, onChange }) {
       </div>
     );
   }
+  if (question.type === 'dropdown') {
+    return (
+      <div>
+        <Label />
+        <select className="input-base" value={value || ''} onChange={(e) => onChange(e.target.value)} required={question.required}>
+          <option value="">선택하세요</option>
+          {(question.options || []).map((opt) => (
+            <option key={opt} value={opt}>
+              {opt}
+            </option>
+          ))}
+        </select>
+      </div>
+    );
+  }
   if (question.type === 'checkbox') {
     return (
       <div className="border border-gray-200 rounded-lg p-4 space-y-4">
+        {question.imageUrl && (
+          <img src={question.imageUrl} alt="" className="max-h-80 w-full rounded-lg border object-contain bg-gray-50" />
+        )}
         <p className="font-semibold whitespace-pre-wrap leading-relaxed text-sm sm:text-base">{question.text}{required}</p>
         <label className="flex items-center gap-2 font-semibold cursor-pointer">
           <input type="checkbox" checked={value === '동의합니다'} onChange={(e) => onChange(e.target.checked ? '동의합니다' : '')} className="w-5 h-5" />
@@ -80,16 +109,25 @@ function Field({ question, value, onChange }) {
 
   return (
     <div>
-      <label className="block font-semibold mb-2">{question.text}{required}</label>
-      <input
-        className="input-base"
-        type={isPhone ? 'tel' : 'text'}
-        inputMode={isPhone ? 'numeric' : undefined}
-        autoComplete={isPhone ? 'tel' : undefined}
-        value={value || ''}
-        onChange={(e) => onChange(isPhone ? formatPhone(e.target.value) : e.target.value)}
-        required={question.required}
-      />
+      <Label />
+      {question.type === 'textarea' ? (
+        <textarea
+          className="input-base min-h-28"
+          value={value || ''}
+          onChange={(e) => onChange(e.target.value)}
+          required={question.required}
+        />
+      ) : (
+        <input
+          className="input-base"
+          type={question.type === 'date' || question.type === 'time' ? question.type : isPhone ? 'tel' : 'text'}
+          inputMode={isPhone ? 'numeric' : undefined}
+          autoComplete={isPhone ? 'tel' : undefined}
+          value={value || ''}
+          onChange={(e) => onChange(isPhone ? formatPhone(e.target.value) : e.target.value)}
+          required={question.required}
+        />
+      )}
     </div>
   );
 }

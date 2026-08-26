@@ -52,6 +52,13 @@ export default function EventDetailPage() {
     setSections((prev) => prev.filter((_, idx) => idx !== i));
   }
 
+  function readImageFile(file) {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => setImageUrl(reader.result);
+    reader.readAsDataURL(file);
+  }
+
   async function save() {
     setSaving(true);
     await fetch(`/api/admin/events/${id}`, {
@@ -95,13 +102,21 @@ export default function EventDetailPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-semibold mb-1">포스터/대표 이미지 주소</label>
-            <input
-              className="input-base"
-              value={imageUrl}
-              onChange={(e) => setImageUrl(e.target.value)}
-              placeholder="https://... 이미지 주소를 붙여넣으세요"
-            />
+            <label className="block text-sm font-semibold mb-1">포스터/대표 이미지</label>
+            <div className="grid gap-2 md:grid-cols-[minmax(0,1fr)_14rem]">
+              <input
+                className="input-base"
+                value={imageUrl}
+                onChange={(e) => setImageUrl(e.target.value)}
+                placeholder="https://... 이미지 주소를 붙여넣으세요"
+              />
+              <input
+                type="file"
+                accept="image/*"
+                className="input-base text-sm"
+                onChange={(e) => readImageFile(e.target.files?.[0])}
+              />
+            </div>
             {imageUrl && (
               <div className="mt-3 overflow-hidden rounded-lg border border-gray-200 bg-gray-50">
                 <img src={imageUrl} alt="포스터 미리보기" className="max-h-80 w-full object-contain" />

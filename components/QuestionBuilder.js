@@ -1,19 +1,27 @@
 'use client';
 
 const TYPE_LABELS = {
+  text: '단답형',
+  textarea: '장문형',
   single: '단일 선택',
   multi: '복수 선택',
-  scale5: '5점 척도',
-  text: '주관식',
+  dropdown: '드롭다운',
   checkbox: '체크박스',
+  scale5: '5점 척도',
+  date: '날짜',
+  time: '시간',
 };
+
+const OPTION_TYPES = ['single', 'multi', 'dropdown'];
 
 function newQuestion(type = 'single') {
   return {
     id: `q_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
     text: '',
     type,
-    options: ['single', 'multi'].includes(type) ? ['옵션 1', '옵션 2'] : [],
+    options: OPTION_TYPES.includes(type) ? ['옵션 1', '옵션 2'] : [],
+    imageUrl: '',
+    hasImage: false,
     lowLabel: '매우 불만족',
     highLabel: '아주 만족',
     required: true,
@@ -21,6 +29,13 @@ function newQuestion(type = 'single') {
 }
 
 export default function QuestionBuilder({ questions, setQuestions }) {
+  function readImageFile(file, callback) {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => callback(reader.result);
+    reader.readAsDataURL(file);
+  }
+
   function update(i, patch) {
     setQuestions((prev) => prev.map((q, idx) => (idx === i ? { ...q, ...patch } : q)));
   }
@@ -36,6 +51,15 @@ export default function QuestionBuilder({ questions, setQuestions }) {
       return arr;
     });
   }
+  function moveTo(from, to) {
+    setQuestions((prev) => {
+      if (from === to) return prev;
+      const arr = [...prev];
+      const [item] = arr.splice(from, 1);
+      arr.splice(to, 0, item);
+      return arr;
+    });
+  }
   function add() {
     setQuestions((prev) => [...prev, newQuestion()]);
   }
@@ -43,9 +67,18 @@ export default function QuestionBuilder({ questions, setQuestions }) {
   return (
     <div className="space-y-4">
       {questions.map((q, i) => (
-        <div key={q.id} className="border border-gray-200 rounded-lg p-4 space-y-4">
+        <div
+          key={q.id}
+          draggable
+          onDragStart={(e) => e.dataTransfer.setData('text/plain', String(i))}
+          onDragOver={(e) => e.preventDefault()}
+          onDrop={(e) => moveTo(Number(e.dataTransfer.getData('text/plain')), i)}
+          className="border border-gray-200 rounded-lg p-4 space-y-4 bg-white"
+        >
           <div className="grid gap-3 md:grid-cols-[2rem_minmax(0,1fr)_9rem] items-start">
-            <span className="text-gray-400 text-sm pt-3">{i + 1}.</span>
+            <span className="text-gray-400 text-sm pt-3 cursor-grab" title="끌어서 순서 변경">
+              {i + 1}.
+            </span>
             <input
               className="input-base"
               placeholder="질문 내용을 입력하세요"
@@ -59,7 +92,7 @@ export default function QuestionBuilder({ questions, setQuestions }) {
                 const type = e.target.value;
                 update(i, {
                   type,
-                  options: ['single', 'multi'].includes(type) ? q.options?.length ? q.options : ['옵션 1', '옵션 2'] : [],
+                  options: OPTION_TYPES.includes(type) ? q.options?.length ? q.options : ['옵션 1', '옵션 2'] : [],
                 });
               }}
             >
@@ -71,7 +104,7 @@ export default function QuestionBuilder({ questions, setQuestions }) {
             </select>
           </div>
 
-          {['single', 'multi'].includes(q.type) && (
+          {OPTION_TYPES.includes(q.type) && (
             <div>
               <label className="block text-xs text-gray-500 mb-1">선택지 (한 줄에 하나씩)</label>
               <textarea
@@ -82,6 +115,36 @@ export default function QuestionBuilder({ questions, setQuestions }) {
               />
             </div>
           )}
+
+          <div className="rounded-lg border border-gray-100 bg-gray-50 p-3 space-y-3">
+            <label className="flex items-center gap-2 text-sm font-semibold text-gray-600">
+              <input
+                type="checkbox"
+                checked={!!q.hasImage}
+                onChange={(e) => update(i, { hasImage: e.target.checked, imageUrl: e.target.checked ? q.imageUrl || '' : '' })}
+              />
+              이 문항에 이미지 첨부
+            </label>
+            {q.hasImage && (
+              <div className="grid gap-2 md:grid-cols-[minmax(0,1fr)_12rem] items-start">
+                <input
+                  className="input-base text-sm"
+                  placeholder="이미지 링크 주소"
+                  value={q.imageUrl || ''}
+                  onChange={(e) => update(i, { imageUrl: e.target.value })}
+                />
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="input-base text-sm"
+                  onChange={(e) => readImageFile(e.target.files?.[0], (imageUrl) => update(i, { imageUrl, hasImage: true }))}
+                />
+                {q.imageUrl && (
+                  <img src={q.imageUrl} alt="문항 이미지 미리보기" className="md:col-span-2 max-h-56 w-full rounded-lg border object-contain bg-white" />
+                )}
+              </div>
+            )}
+          </div>
 
           {q.type === 'scale5' && (
             <div className="flex gap-3">
@@ -111,10 +174,10 @@ export default function QuestionBuilder({ questions, setQuestions }) {
             </label>
             <div className="flex gap-2 text-gray-400">
               <button type="button" onClick={() => move(i, -1)} className="btn-secondary px-3 py-1.5 text-xs">
-                ↑
+                위로
               </button>
               <button type="button" onClick={() => move(i, 1)} className="btn-secondary px-3 py-1.5 text-xs">
-                ↓
+                아래로
               </button>
               <button type="button" onClick={() => remove(i)} className="px-3 py-1.5 text-xs text-red-500 hover:underline">
                 삭제
