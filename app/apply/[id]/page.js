@@ -29,7 +29,7 @@ export default async function ApplyPage({ params }) {
           </div>
         </div>
 
-        <ApplyForm eventId={event.id} />
+        <ApplyForm eventId={event.id} questions={event.questions} />
       </div>
     </main>
   );

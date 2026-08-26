@@ -4,6 +4,7 @@ const TYPE_LABELS = {
   single: '단일 선택',
   scale5: '5점 척도',
   text: '주관식',
+  checkbox: '체크박스',
 };
 
 function newQuestion(type = 'single') {
@@ -57,7 +58,7 @@ export default function QuestionBuilder({ questions, setQuestions }) {
                 const type = e.target.value;
                 update(i, {
                   type,
-                  options: type === 'single' ? q.options?.length ? q.options : ['옵션 1', '옵션 2'] : q.options,
+                  options: type === 'single' ? q.options?.length ? q.options : ['옵션 1', '옵션 2'] : [],
                 });
               }}
             >

@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import QuestionBuilder from '@/components/QuestionBuilder';
+import { cloneDefaultApplyTemplate } from '@/lib/defaultApply';
 
 export default function EventDetailPage() {
   const { id } = useParams();
@@ -10,6 +12,7 @@ export default function EventDetailPage() {
   const [surveys, setSurveys] = useState([]);
   const [title, setTitle] = useState('');
   const [sections, setSections] = useState([]);
+  const [questions, setQuestions] = useState([]);
   const [linkedSurveyId, setLinkedSurveyId] = useState('');
   const [saving, setSaving] = useState(false);
   const [publicUrl, setPublicUrl] = useState('');
@@ -28,6 +31,7 @@ export default function EventDetailPage() {
     setEvent(evData.event);
     setTitle(evData.event.title);
     setSections(evData.event.sections || []);
+    setQuestions(evData.event.questions || cloneDefaultApplyTemplate().questions);
     setLinkedSurveyId(evData.event.linkedSurveyId || '');
     setSurveys(svData.surveys || []);
   }
@@ -51,7 +55,12 @@ export default function EventDetailPage() {
     await fetch(`/api/admin/events/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title, sections, linkedSurveyId: linkedSurveyId || null }),
+      body: JSON.stringify({
+        title,
+        sections,
+        questions: questions.map((q) => ({ ...q, options: (q.options || []).map((o) => o.trim()).filter(Boolean) })),
+        linkedSurveyId: linkedSurveyId || null,
+      }),
     });
     setSaving(false);
     load();
@@ -127,6 +136,20 @@ export default function EventDetailPage() {
             <p className="text-xs text-gray-400 mt-1">
               신청 완료 후 참여자에게 설문 참여 버튼이 표시됩니다.
             </p>
+          </div>
+
+          <div className="border-t border-gray-100 pt-4">
+            <div className="flex items-center justify-between mb-2">
+              <label className="block text-sm font-semibold">참가신청서 문항</label>
+              <button
+                type="button"
+                onClick={() => setQuestions(cloneDefaultApplyTemplate().questions)}
+                className="text-xs text-brand-600 hover:underline"
+              >
+                기본 샘플 양식 불러오기
+              </button>
+            </div>
+            <QuestionBuilder questions={questions} setQuestions={setQuestions} />
           </div>
 
           <div className="flex gap-3">

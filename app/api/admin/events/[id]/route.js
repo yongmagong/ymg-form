@@ -18,6 +18,7 @@ export async function PUT(request, { params }) {
     ...existing,
     title: body.title ?? existing.title,
     sections: body.sections ?? existing.sections,
+    questions: body.questions ?? existing.questions,
     linkedSurveyId: body.linkedSurveyId !== undefined ? body.linkedSurveyId : existing.linkedSurveyId,
   };
   await upsertConfig(EVENTS_TAB, updated);

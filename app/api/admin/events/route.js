@@ -2,6 +2,7 @@ import crypto from 'crypto';
 import { NextResponse } from 'next/server';
 import { isAuthedRequest } from '@/lib/auth';
 import { cloneDefaultSurveyTemplate } from '@/lib/defaultSurvey';
+import { cloneDefaultApplyTemplate } from '@/lib/defaultApply';
 import { EVENTS_TAB, SURVEYS_TAB, listConfig, upsertConfig } from '@/lib/sheets';
 
 export async function GET(request) {
@@ -24,6 +25,7 @@ export async function POST(request) {
     const body = await request.json();
     const eventId = crypto.randomUUID();
     const surveyTemplate = cloneDefaultSurveyTemplate();
+    const applyTemplate = cloneDefaultApplyTemplate();
     const survey = {
       ...surveyTemplate,
       id: crypto.randomUUID(),
@@ -35,6 +37,7 @@ export async function POST(request) {
       id: eventId,
       title: body.title || '제목 없음',
       sections: body.sections || [],
+      questions: body.questions || applyTemplate.questions,
       linkedSurveyId: survey.id,
       createdAt: new Date().toISOString(),
     };
