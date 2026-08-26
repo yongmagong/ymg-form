@@ -3,6 +3,17 @@
 import { useState } from 'react';
 import { cloneDefaultApplyTemplate } from '@/lib/defaultApply';
 
+function initialAnswers(questions) {
+  return questions.reduce((acc, question) => {
+    const shouldCheck =
+      question.defaultChecked || ['consentInfo', 'consentPhoto'].includes(question.id);
+    if (question.type === 'checkbox' && shouldCheck) {
+      acc[question.id] = '동의합니다';
+    }
+    return acc;
+  }, {});
+}
+
 function Field({ question, value, onChange }) {
   const required = question.required ? ' *' : '';
   const selectedValues = Array.isArray(value) ? value : [];
@@ -92,7 +103,12 @@ function Field({ question, value, onChange }) {
         {question.imageUrl && (
           <img src={question.imageUrl} alt="" className="max-h-80 w-full rounded-lg border object-contain bg-gray-50" />
         )}
-        <p className="font-semibold whitespace-pre-wrap leading-relaxed text-sm sm:text-base">{question.text}{required}</p>
+        <div className="space-y-2">
+          <p className="font-semibold leading-relaxed text-base">{question.text}{required}</p>
+          {question.description && (
+            <p className="whitespace-pre-wrap text-sm leading-relaxed text-gray-600">{question.description}</p>
+          )}
+        </div>
         <label className="flex items-center gap-2 font-semibold cursor-pointer">
           <input type="checkbox" checked={value === '동의합니다'} onChange={(e) => onChange(e.target.checked ? '동의합니다' : '')} className="w-5 h-5" />
           동의합니다.
@@ -134,7 +150,7 @@ function Field({ question, value, onChange }) {
 
 export default function ApplyForm({ eventId, questions }) {
   const applyQuestions = questions?.length ? questions : cloneDefaultApplyTemplate().questions;
-  const [answers, setAnswers] = useState({});
+  const [answers, setAnswers] = useState(() => initialAnswers(applyQuestions));
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [result, setResult] = useState(null);

@@ -1,5 +1,7 @@
 'use client';
 
+import { useEffect } from 'react';
+
 const TYPE_LABELS = {
   text: '단답형',
   textarea: '장문형',
@@ -22,6 +24,8 @@ function newQuestion(type = 'single') {
     options: OPTION_TYPES.includes(type) ? ['옵션 1', '옵션 2'] : [],
     imageUrl: '',
     hasImage: false,
+    description: '',
+    defaultChecked: false,
     lowLabel: '매우 불만족',
     highLabel: '아주 만족',
     required: true,
@@ -29,6 +33,24 @@ function newQuestion(type = 'single') {
 }
 
 export default function QuestionBuilder({ questions, setQuestions }) {
+  useEffect(() => {
+    setQuestions((prev) => {
+      let changed = false;
+      const next = prev.map((q) => {
+        if (q.type !== 'checkbox' || q.description !== undefined || !q.text?.includes('\n')) return q;
+        const [title, ...body] = q.text.split('\n');
+        changed = true;
+        return {
+          ...q,
+          text: title.trim(),
+          description: body.join('\n').trim(),
+          defaultChecked: q.defaultChecked ?? true,
+        };
+      });
+      return changed ? next : prev;
+    });
+  }, [setQuestions]);
+
   function readImageFile(file, callback) {
     if (!file) return;
     const reader = new FileReader();
@@ -81,7 +103,7 @@ export default function QuestionBuilder({ questions, setQuestions }) {
             </span>
             <input
               className="input-base"
-              placeholder="질문 내용을 입력하세요"
+              placeholder={q.type === 'checkbox' ? '체크박스 제목을 입력하세요' : '질문 내용을 입력하세요'}
               value={q.text}
               onChange={(e) => update(i, { text: e.target.value })}
             />
@@ -103,6 +125,29 @@ export default function QuestionBuilder({ questions, setQuestions }) {
               ))}
             </select>
           </div>
+
+          {q.type === 'checkbox' && (
+            <div className="rounded-lg border border-brand-100 bg-brand-50 p-3 space-y-3">
+              <div>
+                <label className="block text-xs font-semibold text-brand-700 mb-1">상세 안내문</label>
+                <textarea
+                  className="input-base bg-white min-h-32"
+                  rows={6}
+                  placeholder="개인정보 수집·이용 내용, 사진·영상 촬영 동의 내용 등을 여기에 길게 입력하세요."
+                  value={q.description ?? ''}
+                  onChange={(e) => update(i, { description: e.target.value })}
+                />
+              </div>
+              <label className="flex items-center gap-2 text-sm font-semibold text-gray-600">
+                <input
+                  type="checkbox"
+                  checked={!!q.defaultChecked}
+                  onChange={(e) => update(i, { defaultChecked: e.target.checked })}
+                />
+                응답 화면에서 기본으로 동의 체크
+              </label>
+            </div>
+          )}
 
           {OPTION_TYPES.includes(q.type) && (
             <div>

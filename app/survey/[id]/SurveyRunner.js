@@ -2,6 +2,15 @@
 
 import { useState } from 'react';
 
+function initialAnswers(questions) {
+  return questions.reduce((acc, question) => {
+    if (question.type === 'checkbox' && question.defaultChecked) {
+      acc[question.id] = '동의합니다';
+    }
+    return acc;
+  }, {});
+}
+
 function ScaleButtons({ lowLabel, highLabel, value, onPick }) {
   return (
     <div className="space-y-2">
@@ -77,7 +86,7 @@ function MultiButtons({ options, value, onChange }) {
 
 export default function SurveyRunner({ survey }) {
   const [step, setStep] = useState(0); // 0 = intro, 1..N = questions, N+1 = done
-  const [answers, setAnswers] = useState({});
+  const [answers, setAnswers] = useState(() => initialAnswers(survey.questions));
   const [textDraft, setTextDraft] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -233,6 +242,29 @@ export default function SurveyRunner({ survey }) {
               </option>
             ))}
           </select>
+          <button
+            className="btn-primary w-full"
+            onClick={confirmValue}
+            disabled={submitting || (q.required && !answers[q.id])}
+          >
+            {step === total ? (submitting ? '제출 중...' : '제출하기') : '다음'}
+          </button>
+        </div>
+      )}
+      {q.type === 'checkbox' && (
+        <div className="space-y-4">
+          {q.description && (
+            <p className="whitespace-pre-wrap text-sm leading-relaxed text-gray-600">{q.description}</p>
+          )}
+          <label className="flex items-center gap-3 rounded-lg border border-gray-200 p-3 font-semibold">
+            <input
+              type="checkbox"
+              checked={answers[q.id] === '동의합니다'}
+              onChange={(e) => setAnswers((prev) => ({ ...prev, [q.id]: e.target.checked ? '동의합니다' : '' }))}
+              className="w-5 h-5"
+            />
+            동의합니다.
+          </label>
           <button
             className="btn-primary w-full"
             onClick={confirmValue}
