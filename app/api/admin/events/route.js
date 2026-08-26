@@ -36,6 +36,7 @@ export async function POST(request) {
     const event = {
       id: eventId,
       title: body.title || applyTemplate.title,
+      imageUrl: body.imageUrl || '',
       sections: body.sections || applyTemplate.sections,
       questions: body.questions || applyTemplate.questions,
       linkedSurveyId: survey.id,

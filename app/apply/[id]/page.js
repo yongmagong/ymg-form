@@ -18,6 +18,11 @@ export default async function ApplyPage({ params }) {
     <main className="min-h-screen p-4 sm:p-8">
       <div className="max-w-2xl mx-auto space-y-6">
         <div className="card">
+          {event.imageUrl && (
+            <div className="mb-5 overflow-hidden rounded-lg border border-gray-200 bg-gray-50">
+              <img src={event.imageUrl} alt={`${event.title} 포스터`} className="w-full object-contain" />
+            </div>
+          )}
           <h1 className="text-2xl font-bold text-brand-700 mb-4">{event.title}</h1>
           <div className="space-y-4">
             {(event.sections || []).map((s, i) => (

@@ -7,6 +7,7 @@ export default function EventsPage() {
   const [events, setEvents] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [title, setTitle] = useState('');
+  const [imageUrl, setImageUrl] = useState('');
   const [sections, setSections] = useState([{ label: '소개', content: '' }]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -47,7 +48,7 @@ export default function EventsPage() {
     const res = await fetch('/api/admin/events', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title, sections: sections.filter((s) => s.label || s.content) }),
+      body: JSON.stringify({ title, imageUrl, sections: sections.filter((s) => s.label || s.content) }),
     });
     const data = await res.json();
     setSaving(false);
@@ -57,6 +58,7 @@ export default function EventsPage() {
     }
     setShowForm(false);
     setTitle('');
+    setImageUrl('');
     setSections([{ label: '소개', content: '' }]);
     load();
   }
@@ -83,6 +85,17 @@ export default function EventsPage() {
               placeholder="예: 2026 주민자치 조력가양성교육"
               required
             />
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold mb-1">포스터/대표 이미지 주소</label>
+            <input
+              className="input-base"
+              value={imageUrl}
+              onChange={(e) => setImageUrl(e.target.value)}
+              placeholder="https://... 이미지 주소를 붙여넣으세요"
+            />
+            <p className="text-xs text-gray-400 mt-1">공개된 이미지 주소를 넣으면 신청서 상단에 표시됩니다.</p>
           </div>
 
           <div>

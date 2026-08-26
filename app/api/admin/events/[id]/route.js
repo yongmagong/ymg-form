@@ -17,6 +17,7 @@ export async function PUT(request, { params }) {
   const updated = {
     ...existing,
     title: body.title ?? existing.title,
+    imageUrl: body.imageUrl ?? existing.imageUrl ?? '',
     sections: body.sections ?? existing.sections,
     questions: body.questions ?? existing.questions,
     linkedSurveyId: body.linkedSurveyId !== undefined ? body.linkedSurveyId : existing.linkedSurveyId,

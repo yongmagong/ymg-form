@@ -11,6 +11,7 @@ export default function EventDetailPage() {
   const [event, setEvent] = useState(null);
   const [surveys, setSurveys] = useState([]);
   const [title, setTitle] = useState('');
+  const [imageUrl, setImageUrl] = useState('');
   const [sections, setSections] = useState([]);
   const [questions, setQuestions] = useState([]);
   const [linkedSurveyId, setLinkedSurveyId] = useState('');
@@ -30,6 +31,7 @@ export default function EventDetailPage() {
     const svData = await svRes.json();
     setEvent(evData.event);
     setTitle(evData.event.title);
+    setImageUrl(evData.event.imageUrl || '');
     setSections(evData.event.sections || []);
     setQuestions(evData.event.questions || cloneDefaultApplyTemplate().questions);
     setLinkedSurveyId(evData.event.linkedSurveyId || '');
@@ -57,6 +59,7 @@ export default function EventDetailPage() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         title,
+        imageUrl,
         sections,
         questions: questions.map((q) => ({ ...q, options: (q.options || []).map((o) => o.trim()).filter(Boolean) })),
         linkedSurveyId: linkedSurveyId || null,
@@ -89,6 +92,21 @@ export default function EventDetailPage() {
           <div>
             <label className="block text-sm font-semibold mb-1">제목</label>
             <input className="input-base" value={title} onChange={(e) => setTitle(e.target.value)} />
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold mb-1">포스터/대표 이미지 주소</label>
+            <input
+              className="input-base"
+              value={imageUrl}
+              onChange={(e) => setImageUrl(e.target.value)}
+              placeholder="https://... 이미지 주소를 붙여넣으세요"
+            />
+            {imageUrl && (
+              <div className="mt-3 overflow-hidden rounded-lg border border-gray-200 bg-gray-50">
+                <img src={imageUrl} alt="포스터 미리보기" className="max-h-80 w-full object-contain" />
+              </div>
+            )}
           </div>
 
           <div>
