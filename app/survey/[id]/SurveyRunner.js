@@ -42,6 +42,39 @@ function SingleButtons({ options, value, onPick }) {
   );
 }
 
+function MultiButtons({ options, value, onChange }) {
+  const selectedValues = Array.isArray(value) ? value : [];
+
+  function toggle(option) {
+    if (selectedValues.includes(option)) {
+      onChange(selectedValues.filter((item) => item !== option));
+    } else {
+      onChange([...selectedValues, option]);
+    }
+  }
+
+  return (
+    <div className="space-y-3">
+      {options.map((opt) => (
+        <label
+          key={opt}
+          className={`flex items-center gap-3 cursor-pointer border-2 rounded-2xl p-4 ${
+            selectedValues.includes(opt) ? 'border-brand-500 bg-brand-50' : 'border-gray-200'
+          }`}
+        >
+          <input
+            type="checkbox"
+            checked={selectedValues.includes(opt)}
+            onChange={() => toggle(opt)}
+            className="w-5 h-5"
+          />
+          <span className="font-medium">{opt}</span>
+        </label>
+      ))}
+    </div>
+  );
+}
+
 export default function SurveyRunner({ survey }) {
   const [step, setStep] = useState(0); // 0 = intro, 1..N = questions, N+1 = done
   const [answers, setAnswers] = useState({});
@@ -88,6 +121,14 @@ export default function SurveyRunner({ survey }) {
     } else {
       setStep((s) => s + 1);
       setTextDraft('');
+    }
+  }
+
+  function confirmMulti() {
+    if (step === total) {
+      submitAll(answers);
+    } else {
+      setStep((s) => s + 1);
     }
   }
 
@@ -149,6 +190,22 @@ export default function SurveyRunner({ survey }) {
       <h2 className="text-lg font-bold leading-snug">{q.text}</h2>
 
       {q.type === 'single' && <SingleButtons options={q.options} value={answers[q.id]} onPick={pickChoice} />}
+      {q.type === 'multi' && (
+        <div className="space-y-3">
+          <MultiButtons
+            options={q.options || []}
+            value={answers[q.id]}
+            onChange={(value) => setAnswers((prev) => ({ ...prev, [q.id]: value }))}
+          />
+          <button
+            className="btn-primary w-full"
+            onClick={confirmMulti}
+            disabled={submitting || (q.required && !(answers[q.id] || []).length)}
+          >
+            {step === total ? (submitting ? '제출 중...' : '제출하기') : '다음'}
+          </button>
+        </div>
+      )}
       {q.type === 'scale5' && (
         <ScaleButtons lowLabel={q.lowLabel} highLabel={q.highLabel} value={answers[q.id]} onPick={pickChoice} />
       )}

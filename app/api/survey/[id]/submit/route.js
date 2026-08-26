@@ -9,7 +9,9 @@ export async function POST(request, { params }) {
   const answers = body.answers || {};
 
   for (const q of survey.questions) {
-    if (q.required && !answers[q.id]) {
+    const answer = answers[q.id];
+    const missing = Array.isArray(answer) ? answer.length === 0 : !answer;
+    if (q.required && missing) {
       return NextResponse.json({ error: `"${q.text}" 항목에 응답해 주세요.` }, { status: 400 });
     }
   }
