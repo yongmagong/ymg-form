@@ -2,6 +2,7 @@
 
 const TYPE_LABELS = {
   single: '단일 선택',
+  multi: '복수 선택',
   scale5: '5점 척도',
   text: '주관식',
   checkbox: '체크박스',
@@ -12,7 +13,7 @@ function newQuestion(type = 'single') {
     id: `q_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
     text: '',
     type,
-    options: type === 'single' ? ['옵션 1', '옵션 2'] : [],
+    options: ['single', 'multi'].includes(type) ? ['옵션 1', '옵션 2'] : [],
     lowLabel: '매우 불만족',
     highLabel: '아주 만족',
     required: true,
@@ -58,7 +59,7 @@ export default function QuestionBuilder({ questions, setQuestions }) {
                 const type = e.target.value;
                 update(i, {
                   type,
-                  options: type === 'single' ? q.options?.length ? q.options : ['옵션 1', '옵션 2'] : [],
+                  options: ['single', 'multi'].includes(type) ? q.options?.length ? q.options : ['옵션 1', '옵션 2'] : [],
                 });
               }}
             >
@@ -70,7 +71,7 @@ export default function QuestionBuilder({ questions, setQuestions }) {
             </select>
           </div>
 
-          {q.type === 'single' && (
+          {['single', 'multi'].includes(q.type) && (
             <div>
               <label className="block text-xs text-gray-500 mb-1">선택지 (한 줄에 하나씩)</label>
               <textarea

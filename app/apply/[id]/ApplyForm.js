@@ -5,6 +5,16 @@ import { cloneDefaultApplyTemplate } from '@/lib/defaultApply';
 
 function Field({ question, value, onChange }) {
   const required = question.required ? ' *' : '';
+  const selectedValues = Array.isArray(value) ? value : [];
+
+  function toggleMulti(option) {
+    if (selectedValues.includes(option)) {
+      onChange(selectedValues.filter((item) => item !== option));
+    } else {
+      onChange([...selectedValues, option]);
+    }
+  }
+
   if (question.type === 'single') {
     return (
       <div>
@@ -24,12 +34,40 @@ function Field({ question, value, onChange }) {
       </div>
     );
   }
+  if (question.type === 'multi') {
+    return (
+      <div>
+        <label className="block font-semibold mb-2">{question.text}{required}</label>
+        <div className="space-y-2">
+          {(question.options || []).map((opt) => (
+            <label
+              key={opt}
+              className={`flex items-center gap-3 cursor-pointer border-2 rounded-2xl p-4 ${
+                selectedValues.includes(opt) ? 'border-brand-500 bg-brand-50' : 'border-gray-200'
+              }`}
+            >
+              <input
+                type="checkbox"
+                checked={selectedValues.includes(opt)}
+                onChange={() => toggleMulti(opt)}
+                className="w-5 h-5"
+              />
+              <span className="font-medium">{opt}</span>
+            </label>
+          ))}
+        </div>
+      </div>
+    );
+  }
   if (question.type === 'checkbox') {
     return (
-      <label className="flex items-center gap-2 font-semibold cursor-pointer border-2 border-gray-200 rounded-2xl p-4">
-        <input type="checkbox" checked={value === '동의합니다'} onChange={(e) => onChange(e.target.checked ? '동의합니다' : '')} className="w-5 h-5" />
-        {question.text}{required}
-      </label>
+      <div className="border-2 border-gray-200 rounded-2xl p-4 space-y-4">
+        <p className="font-semibold whitespace-pre-wrap leading-relaxed">{question.text}{required}</p>
+        <label className="flex items-center gap-2 font-semibold cursor-pointer">
+          <input type="checkbox" checked={value === '동의합니다'} onChange={(e) => onChange(e.target.checked ? '동의합니다' : '')} className="w-5 h-5" />
+          동의합니다.
+        </label>
+      </div>
     );
   }
   return (
@@ -46,6 +84,12 @@ export default function ApplyForm({ eventId, questions }) {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [result, setResult] = useState(null);
+
+  function isMissingAnswer(question) {
+    const answer = answers[question.id];
+    if (Array.isArray(answer)) return answer.length === 0;
+    return !answer;
+  }
 
   async function submit(e) {
     e.preventDefault();
@@ -96,7 +140,7 @@ export default function ApplyForm({ eventId, questions }) {
       <button
         type="submit"
         className="btn-primary w-full text-lg"
-        disabled={submitting || applyQuestions.some((q) => q.required && !answers[q.id])}
+        disabled={submitting || applyQuestions.some((q) => q.required && isMissingAnswer(q))}
       >
         {submitting ? '제출 중...' : '제출하기'}
       </button>

@@ -35,8 +35,8 @@ export async function POST(request) {
     };
     const event = {
       id: eventId,
-      title: body.title || '제목 없음',
-      sections: body.sections || [],
+      title: body.title || applyTemplate.title,
+      sections: body.sections || applyTemplate.sections,
       questions: body.questions || applyTemplate.questions,
       linkedSurveyId: survey.id,
       createdAt: new Date().toISOString(),

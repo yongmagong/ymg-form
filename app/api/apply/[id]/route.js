@@ -8,7 +8,12 @@ export async function POST(request, { params }) {
   const body = await request.json();
   const answers = body.answers || {};
   const questions = event.questions || [];
-  const missing = questions.find((q) => q.required && !answers[q.id]);
+  const missing = questions.find((q) => {
+    if (!q.required) return false;
+    const answer = answers[q.id];
+    if (Array.isArray(answer)) return answer.length === 0;
+    return !answer;
+  });
 
   if (missing) {
     return NextResponse.json({ error: `${missing.text} 항목을 입력해 주세요.` }, { status: 400 });
