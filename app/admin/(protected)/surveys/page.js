@@ -76,7 +76,7 @@ export default function SurveysPage() {
       </div>
 
       {showForm && (
-        <form onSubmit={createSurvey} className="card space-y-4">
+        <form onSubmit={createSurvey} className="card space-y-5">
           <div className="flex justify-between items-center">
             <label className="block text-sm font-semibold">설문 제목</label>
             <button type="button" onClick={loadTemplate} className="text-xs text-brand-600 hover:underline">
@@ -87,7 +87,7 @@ export default function SurveysPage() {
 
           <div>
             <label className="block text-sm font-semibold mb-1">설문 소개</label>
-            <textarea className="input-base" rows={3} value={intro} onChange={(e) => setIntro(e.target.value)} />
+            <textarea className="input-base min-h-28" rows={5} value={intro} onChange={(e) => setIntro(e.target.value)} />
           </div>
 
           <div>

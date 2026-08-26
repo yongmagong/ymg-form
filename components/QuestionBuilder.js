@@ -43,17 +43,17 @@ export default function QuestionBuilder({ questions, setQuestions }) {
   return (
     <div className="space-y-4">
       {questions.map((q, i) => (
-        <div key={q.id} className="border-2 border-gray-100 rounded-2xl p-4 space-y-3">
-          <div className="flex gap-2 items-center">
-            <span className="text-gray-400 text-sm w-6">{i + 1}.</span>
+        <div key={q.id} className="border border-gray-200 rounded-lg p-4 space-y-4">
+          <div className="grid gap-3 md:grid-cols-[2rem_minmax(0,1fr)_9rem] items-start">
+            <span className="text-gray-400 text-sm pt-3">{i + 1}.</span>
             <input
-              className="input-base flex-1"
+              className="input-base"
               placeholder="질문 내용을 입력하세요"
               value={q.text}
               onChange={(e) => update(i, { text: e.target.value })}
             />
             <select
-              className="input-base w-32 flex-shrink-0"
+              className="input-base text-sm"
               value={q.type}
               onChange={(e) => {
                 const type = e.target.value;
@@ -76,7 +76,7 @@ export default function QuestionBuilder({ questions, setQuestions }) {
               <label className="block text-xs text-gray-500 mb-1">선택지 (한 줄에 하나씩)</label>
               <textarea
                 className="input-base"
-                rows={Math.max(2, (q.options || []).length)}
+                rows={Math.min(8, Math.max(3, (q.options || []).length))}
                 value={(q.options || []).join('\n')}
                 onChange={(e) => update(i, { options: e.target.value.split('\n') })}
               />
@@ -100,7 +100,7 @@ export default function QuestionBuilder({ questions, setQuestions }) {
             </div>
           )}
 
-          <div className="flex items-center justify-between text-sm">
+          <div className="flex items-center justify-between gap-3 text-sm border-t border-gray-100 pt-3">
             <label className="flex items-center gap-2 text-gray-500">
               <input
                 type="checkbox"
@@ -109,14 +109,14 @@ export default function QuestionBuilder({ questions, setQuestions }) {
               />
               필수 응답
             </label>
-            <div className="flex gap-3 text-gray-400">
-              <button type="button" onClick={() => move(i, -1)} className="hover:text-gray-700">
+            <div className="flex gap-2 text-gray-400">
+              <button type="button" onClick={() => move(i, -1)} className="btn-secondary px-3 py-1.5 text-xs">
                 ↑
               </button>
-              <button type="button" onClick={() => move(i, 1)} className="hover:text-gray-700">
+              <button type="button" onClick={() => move(i, 1)} className="btn-secondary px-3 py-1.5 text-xs">
                 ↓
               </button>
-              <button type="button" onClick={() => remove(i)} className="hover:text-red-600">
+              <button type="button" onClick={() => remove(i)} className="px-3 py-1.5 text-xs text-red-500 hover:underline">
                 삭제
               </button>
             </div>

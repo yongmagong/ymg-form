@@ -58,7 +58,7 @@ function MultiButtons({ options, value, onChange }) {
       {options.map((opt) => (
         <label
           key={opt}
-          className={`flex items-center gap-3 cursor-pointer border-2 rounded-2xl p-4 ${
+          className={`flex items-center gap-3 cursor-pointer border rounded-lg p-3 ${
             selectedValues.includes(opt) ? 'border-brand-500 bg-brand-50' : 'border-gray-200'
           }`}
         >

@@ -84,8 +84,8 @@ export default function EventDetailPage() {
     <div className="space-y-6">
       <h1 className="text-xl font-bold">신청서 편집</h1>
 
-      <div className="grid md:grid-cols-3 gap-6">
-        <div className="md:col-span-2 card space-y-4">
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_18rem]">
+        <div className="card space-y-5">
           <div>
             <label className="block text-sm font-semibold mb-1">제목</label>
             <input className="input-base" value={title} onChange={(e) => setTitle(e.target.value)} />
@@ -95,20 +95,20 @@ export default function EventDetailPage() {
             <label className="block text-sm font-semibold mb-2">안내 내용</label>
             <div className="space-y-3">
               {sections.map((s, i) => (
-                <div key={i} className="flex gap-2 items-start">
+                <div key={i} className="grid gap-2 md:grid-cols-[8rem_minmax(0,1fr)_3.5rem] items-start">
                   <input
-                    className="input-base w-32 flex-shrink-0"
+                    className="input-base text-sm"
                     placeholder="항목명"
                     value={s.label}
                     onChange={(e) => updateSection(i, 'label', e.target.value)}
                   />
                   <textarea
-                    className="input-base flex-1"
-                    rows={2}
+                    className="input-base min-h-24"
+                    rows={4}
                     value={s.content}
                     onChange={(e) => updateSection(i, 'content', e.target.value)}
                   />
-                  <button type="button" onClick={() => removeSection(i)} className="text-gray-400 hover:text-red-600 px-2 py-3">
+                  <button type="button" onClick={() => removeSection(i)} className="px-2 py-2 text-sm text-gray-400 hover:text-red-600">
                     삭제
                   </button>
                 </div>
@@ -162,7 +162,7 @@ export default function EventDetailPage() {
           </div>
         </div>
 
-        <div className="card space-y-5 text-center">
+        <div className="card space-y-5 text-center h-fit lg:sticky lg:top-6">
           <div className="space-y-3">
             <p className="font-semibold text-sm">참가신청서 QR코드</p>
             {qrSrc && <img src={qrSrc} alt="참가신청서 QR" className="w-full rounded-xl border" />}

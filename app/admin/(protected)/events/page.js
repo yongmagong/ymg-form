@@ -73,7 +73,7 @@ export default function EventsPage() {
       </div>
 
       {showForm && (
-        <form onSubmit={createEvent} className="card space-y-4">
+        <form onSubmit={createEvent} className="card space-y-5">
           <div>
             <label className="block text-sm font-semibold mb-1">제목</label>
             <input
@@ -91,16 +91,16 @@ export default function EventsPage() {
             </label>
             <div className="space-y-3">
               {sections.map((s, i) => (
-                <div key={i} className="flex gap-2 items-start">
+                <div key={i} className="grid gap-2 md:grid-cols-[9rem_minmax(0,1fr)_3.5rem] items-start">
                   <input
-                    className="input-base w-32 flex-shrink-0"
+                    className="input-base text-sm"
                     placeholder="항목명 (예: 일정)"
                     value={s.label}
                     onChange={(e) => updateSection(i, 'label', e.target.value)}
                   />
                   <textarea
-                    className="input-base flex-1"
-                    rows={2}
+                    className="input-base min-h-24"
+                    rows={4}
                     placeholder="내용"
                     value={s.content}
                     onChange={(e) => updateSection(i, 'content', e.target.value)}
@@ -108,7 +108,7 @@ export default function EventsPage() {
                   <button
                     type="button"
                     onClick={() => removeSection(i)}
-                    className="text-gray-400 hover:text-red-600 px-2 py-3"
+                    className="px-2 py-2 text-sm text-gray-400 hover:text-red-600"
                   >
                     삭제
                   </button>

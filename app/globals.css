@@ -11,7 +11,7 @@ body {
 }
 
 .choice-btn {
-  @apply w-full text-left px-5 py-4 rounded-2xl border-2 border-gray-200 bg-white text-lg font-medium
+  @apply w-full text-left px-4 py-3 rounded-lg border border-gray-200 bg-white text-base font-medium
     active:scale-[0.98] transition-all duration-100 select-none;
 }
 
@@ -24,7 +24,7 @@ body {
 }
 
 .scale-btn {
-  @apply flex-1 aspect-square rounded-2xl border-2 border-gray-200 bg-white flex flex-col items-center
+  @apply flex-1 h-12 rounded-lg border border-gray-200 bg-white flex flex-col items-center
     justify-center gap-1 active:scale-[0.95] transition-all duration-100 select-none font-semibold;
 }
 
@@ -33,18 +33,18 @@ body {
 }
 
 .input-base {
-  @apply w-full px-4 py-3 rounded-xl border-2 border-gray-200 text-base focus:outline-none focus:border-brand-500;
+  @apply w-full px-3 py-2.5 rounded-lg border border-gray-300 text-base focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100;
 }
 
 .btn-primary {
-  @apply bg-brand-600 text-white font-semibold px-6 py-3 rounded-xl hover:bg-brand-700 transition-colors
+  @apply bg-brand-600 text-white font-semibold px-5 py-2.5 rounded-lg hover:bg-brand-700 transition-colors
     disabled:bg-gray-300 disabled:cursor-not-allowed;
 }
 
 .btn-secondary {
-  @apply bg-gray-100 text-gray-700 font-semibold px-6 py-3 rounded-xl hover:bg-gray-200 transition-colors;
+  @apply bg-gray-100 text-gray-700 font-semibold px-4 py-2.5 rounded-lg hover:bg-gray-200 transition-colors;
 }
 
 .card {
-  @apply bg-white rounded-2xl shadow-sm border border-gray-100 p-6;
+  @apply bg-white rounded-lg shadow-sm border border-gray-100 p-5;
 }

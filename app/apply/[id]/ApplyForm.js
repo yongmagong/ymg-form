@@ -19,7 +19,7 @@ function Field({ question, value, onChange }) {
     return (
       <div>
         <label className="block font-semibold mb-2">{question.text}{required}</label>
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid sm:grid-cols-2 gap-2">
           {(question.options || []).map((opt) => (
             <button
               type="button"
@@ -42,7 +42,7 @@ function Field({ question, value, onChange }) {
           {(question.options || []).map((opt) => (
             <label
               key={opt}
-              className={`flex items-center gap-3 cursor-pointer border-2 rounded-2xl p-4 ${
+              className={`flex items-center gap-3 cursor-pointer border rounded-lg p-3 ${
                 selectedValues.includes(opt) ? 'border-brand-500 bg-brand-50' : 'border-gray-200'
               }`}
             >
@@ -61,8 +61,8 @@ function Field({ question, value, onChange }) {
   }
   if (question.type === 'checkbox') {
     return (
-      <div className="border-2 border-gray-200 rounded-2xl p-4 space-y-4">
-        <p className="font-semibold whitespace-pre-wrap leading-relaxed">{question.text}{required}</p>
+      <div className="border border-gray-200 rounded-lg p-4 space-y-4">
+        <p className="font-semibold whitespace-pre-wrap leading-relaxed text-sm sm:text-base">{question.text}{required}</p>
         <label className="flex items-center gap-2 font-semibold cursor-pointer">
           <input type="checkbox" checked={value === '동의합니다'} onChange={(e) => onChange(e.target.checked ? '동의합니다' : '')} className="w-5 h-5" />
           동의합니다.

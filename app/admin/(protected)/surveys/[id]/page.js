@@ -66,15 +66,15 @@ export default function SurveyDetailPage() {
         </Link>
       </div>
 
-      <div className="grid md:grid-cols-3 gap-6">
-        <div className="md:col-span-2 card space-y-4">
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_18rem]">
+        <div className="card space-y-5">
           <div>
             <label className="block text-sm font-semibold mb-1">설문 제목</label>
             <input className="input-base" value={title} onChange={(e) => setTitle(e.target.value)} />
           </div>
           <div>
             <label className="block text-sm font-semibold mb-1">설문 소개</label>
-            <textarea className="input-base" rows={3} value={intro} onChange={(e) => setIntro(e.target.value)} />
+            <textarea className="input-base min-h-28" rows={5} value={intro} onChange={(e) => setIntro(e.target.value)} />
           </div>
           <div>
             <label className="block text-sm font-semibold mb-2">설문 항목</label>
@@ -90,7 +90,7 @@ export default function SurveyDetailPage() {
           </div>
         </div>
 
-        <div className="card space-y-3 text-center">
+        <div className="card space-y-3 text-center h-fit lg:sticky lg:top-6">
           <p className="font-semibold text-sm">배포용 QR코드</p>
           {qrSrc && <img src={qrSrc} alt="QR" className="w-full rounded-xl border" />}
           <a href={qrSrc} download={`${title}_설문_QR.png`} className="btn-primary block">
