@@ -216,6 +216,8 @@ export default function QuestionBuilder({ questions, setQuestions }) {
               <input
                 type={q.type}
                 className="input-base bg-white max-w-xs"
+                onClick={(e) => e.currentTarget.showPicker?.()}
+                onFocus={(e) => e.currentTarget.showPicker?.()}
                 aria-label={q.type === 'date' ? '날짜 선택 미리보기' : '시간 선택 미리보기'}
               />
             </div>

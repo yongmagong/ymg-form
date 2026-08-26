@@ -310,6 +310,8 @@ export default function SurveyRunner({ survey }) {
             className="input-base"
             type={q.type}
             value={answers[q.id] || ''}
+            onClick={(e) => e.currentTarget.showPicker?.()}
+            onFocus={(e) => e.currentTarget.showPicker?.()}
             onChange={(e) => setAnswers((prev) => ({ ...prev, [q.id]: e.target.value }))}
           />
           <button

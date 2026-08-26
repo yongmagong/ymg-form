@@ -18,6 +18,12 @@ function Field({ question, value, onChange }) {
   const required = question.required ? ' *' : '';
   const selectedValues = Array.isArray(value) ? value : [];
   const isPhone = question.id === 'phone' || question.text.includes('연락처') || question.text.includes('전화');
+  const isPicker = question.type === 'date' || question.type === 'time';
+
+  function openPicker(e) {
+    if (!isPicker) return;
+    e.currentTarget.showPicker?.();
+  }
 
   function Label() {
     return (
@@ -136,10 +142,12 @@ function Field({ question, value, onChange }) {
       ) : (
         <input
           className="input-base"
-          type={question.type === 'date' || question.type === 'time' ? question.type : isPhone ? 'tel' : 'text'}
+          type={isPicker ? question.type : isPhone ? 'tel' : 'text'}
           inputMode={isPhone ? 'numeric' : undefined}
           autoComplete={isPhone ? 'tel' : undefined}
           value={value || ''}
+          onClick={openPicker}
+          onFocus={openPicker}
           onChange={(e) => onChange(isPhone ? formatPhone(e.target.value) : e.target.value)}
           required={question.required}
         />
