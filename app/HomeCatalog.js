@@ -2,12 +2,17 @@
 
 import { useState } from 'react';
 import { CATEGORY_OPTIONS } from '@/lib/eventOptions';
-import { formatDateRange, formatRecruitPeriod } from '@/lib/eventStatus';
+import { formatDateRange } from '@/lib/eventStatus';
 
 const TABS = ['전체', ...CATEGORY_OPTIONS];
 
 function EventCard({ event }) {
   const closed = event.status === '모집종료';
+  const tag = event.orgLabel || event.category || '행사';
+  const capacityText = event.capacity
+    ? `${event.appliedCount}/${event.capacity}`
+    : '모집 인원수 제한 없음';
+
   return (
     <a
       href={`/apply/${event.id}`}
@@ -20,30 +25,26 @@ function EventCard({ event }) {
           <div className="w-full h-full flex items-center justify-center text-gray-300 text-sm">이미지 없음</div>
         )}
         <span
-          className={`absolute top-2 left-2 text-xs font-semibold rounded-full px-2 py-1 ${
-            closed ? 'bg-gray-700/80 text-white' : 'bg-brand-600 text-white'
+          className={`absolute top-0 left-0 text-xs font-semibold rounded-tl-lg rounded-br-lg px-3 py-1.5 ${
+            closed ? 'bg-gray-600 text-white' : 'bg-brand-600 text-white'
           }`}
         >
           {event.status}
         </span>
       </div>
       <div className="p-4 space-y-2">
-        <div className="flex flex-wrap items-center gap-1.5">
-          <span className="text-xs rounded-full bg-brand-50 text-brand-700 px-2 py-0.5">{event.category || '행사'}</span>
-          {event.orgLabel && (
-            <span className="text-xs rounded-full bg-gray-100 text-gray-600 px-2 py-0.5">{event.orgLabel}</span>
-          )}
+        <span className="text-xs rounded-full bg-gray-100 text-gray-600 px-2 py-0.5 inline-block">{tag}</span>
+        <h3 className="font-bold leading-snug line-clamp-2 min-h-[2.6em]">{event.title}</h3>
+
+        <div className="flex items-center gap-1.5 text-xs text-gray-500 pt-1">
+          <span className="w-4 h-4 rounded-full bg-brand-500 inline-block" />
+          <span>{event.ownerName || event.createdByName || '관리자'}</span>
         </div>
-        <h3 className="font-bold leading-snug line-clamp-2">{event.title}</h3>
-        <div className="text-xs text-gray-500 space-y-0.5">
-          {event.eventStart && <p>📅 {formatDateRange(event.eventStart, event.eventEnd)}</p>}
-          {event.locationName && <p>📍 {event.locationName}</p>}
-          <p>
-            👥 신청 {event.appliedCount}명{event.capacity ? ` / 정원 ${event.capacity}명` : ''}
-          </p>
-          {(event.recruitStart || event.recruitEnd) && (
-            <p>🗓 모집 {formatRecruitPeriod(event.recruitStart, event.recruitEnd)}</p>
-          )}
+
+        <div className="text-xs text-gray-500 space-y-1 pt-1">
+          <p>👥 모임인원 : {capacityText}</p>
+          {event.eventStart && <p>📅 모임일시 : {formatDateRange(event.eventStart, event.eventEnd)}</p>}
+          {event.locationName && <p>📍 모임장소 : {event.locationName}</p>}
         </div>
       </div>
     </a>
@@ -74,7 +75,7 @@ export default function HomeCatalog({ events }) {
       {filtered.length === 0 ? (
         <p className="text-gray-400 text-sm py-12 text-center">현재 게시된 모임/행사가 없습니다.</p>
       ) : (
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {filtered.map((event) => (
             <EventCard key={event.id} event={event} />
           ))}
