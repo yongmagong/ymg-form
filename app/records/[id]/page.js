@@ -1,4 +1,5 @@
 import { EVENTS_TAB, RECORDS_TAB, getConfigById } from '@/lib/sheets';
+import { attachmentKind, KIND_LABELS } from '@/lib/attachmentKind';
 import SiteHeader from '../../SiteHeader';
 
 export const dynamic = 'force-dynamic';
@@ -62,12 +63,11 @@ export default async function RecordDetailPublicPage({ params }) {
               {record.attachments.map((a, i) => (
                 <a
                   key={i}
-                  href={a.url}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-brand-700 hover:bg-brand-50"
+                  href={`/records/${record.id}/read/${i}`}
+                  className="flex items-center justify-between gap-2 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-brand-700 hover:bg-brand-50"
                 >
-                  📎 {a.name}
+                  <span>📖 {a.name}</span>
+                  <span className="text-xs text-gray-400 whitespace-nowrap">{KIND_LABELS[attachmentKind(a)]}</span>
                 </a>
               ))}
             </div>

@@ -98,7 +98,7 @@ export default async function ApplyPage({ params }) {
           </div>
         </div>
 
-        <div id="apply-form">
+        <div id="apply-form" className="scroll-mt-20">
           <ApplyForm eventId={event.id} questions={event.questions} closed={status.closed} />
         </div>
       </div>

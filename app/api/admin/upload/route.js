@@ -2,8 +2,6 @@ import { handleUpload } from '@vercel/blob/client';
 import { NextResponse } from 'next/server';
 import { getAuthedRequestUser } from '@/lib/auth';
 
-const ALLOWED_TYPES = ['application/pdf', 'text/html'];
-
 export async function POST(request) {
   const user = await getAuthedRequestUser(request);
   if (!user) return NextResponse.json({ error: '인증 필요' }, { status: 401 });
@@ -14,8 +12,9 @@ export async function POST(request) {
     const jsonResponse = await handleUpload({
       body,
       request,
-      onBeforeGenerateToken: async (pathname, clientPayload, multipart) => ({
-        allowedContentTypes: ALLOWED_TYPES,
+      onBeforeGenerateToken: async () => ({
+        // Content-type sniffing for .md files is unreliable across browsers/OS,
+        // so file type is validated by extension client-side (admin-only endpoint) instead.
         addRandomSuffix: true,
         maximumSizeInBytes: 25 * 1024 * 1024,
       }),

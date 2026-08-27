@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import { upload } from '@vercel/blob/client';
 
+const EXT_KIND = { pdf: 'pdf', html: 'html', htm: 'html', md: 'md', markdown: 'md' };
+
 export default function AttachmentUploader({ attachments, setAttachments }) {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
@@ -10,13 +12,19 @@ export default function AttachmentUploader({ attachments, setAttachments }) {
   async function handleFile(file) {
     if (!file) return;
     setError('');
+    const ext = file.name.split('.').pop()?.toLowerCase();
+    const kind = EXT_KIND[ext];
+    if (!kind) {
+      setError('PDF, HTML, MD 파일만 첨부할 수 있습니다.');
+      return;
+    }
     setUploading(true);
     try {
       const blob = await upload(file.name, file, {
         access: 'public',
         handleUploadUrl: '/api/admin/upload',
       });
-      setAttachments((prev) => [...prev, { name: file.name, url: blob.url, contentType: file.type }]);
+      setAttachments((prev) => [...prev, { name: file.name, url: blob.url, kind }]);
     } catch (err) {
       setError(err.message || '업로드에 실패했습니다.');
     }
@@ -45,7 +53,7 @@ export default function AttachmentUploader({ attachments, setAttachments }) {
       )}
       <input
         type="file"
-        accept=".pdf,application/pdf,.html,.htm,text/html"
+        accept=".pdf,application/pdf,.html,.htm,text/html,.md,.markdown,text/markdown"
         className="input-base text-sm"
         disabled={uploading}
         onChange={(e) => {
@@ -55,7 +63,7 @@ export default function AttachmentUploader({ attachments, setAttachments }) {
       />
       {uploading && <p className="text-xs text-gray-400">업로드 중...</p>}
       {error && <p className="text-xs text-red-600">{error}</p>}
-      <p className="text-xs text-gray-400">PDF 또는 HTML 파일을 첨부할 수 있습니다. (최대 25MB)</p>
+      <p className="text-xs text-gray-400">PDF, HTML, MD 파일을 첨부할 수 있습니다. (최대 25MB)</p>
     </div>
   );
 }

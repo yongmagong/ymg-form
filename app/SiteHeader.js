@@ -1,6 +1,6 @@
 export default function SiteHeader() {
   return (
-    <header className="bg-white border-b border-gray-200">
+    <header className="bg-white border-b border-gray-200 sticky top-0 z-20">
       <div className="max-w-6xl mx-auto px-4 py-4 flex flex-wrap items-center justify-between gap-3">
         <a href="/" className="block">
           <p className="text-xs text-gray-400">용인시 마을공동체지원센터</p>
