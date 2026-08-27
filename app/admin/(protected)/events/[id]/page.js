@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import QuestionBuilder from '@/components/QuestionBuilder';
 import { cloneDefaultApplyTemplate } from '@/lib/defaultApply';
 import { MAX_INLINE_IMAGE_CHARS } from '@/lib/imageData';
+import { CATEGORY_OPTIONS } from '@/lib/eventOptions';
 
 export default function EventDetailPage() {
   const { id } = useParams();
@@ -17,6 +18,17 @@ export default function EventDetailPage() {
   const [sections, setSections] = useState([]);
   const [questions, setQuestions] = useState([]);
   const [linkedSurveyId, setLinkedSurveyId] = useState('');
+  const [category, setCategory] = useState(CATEGORY_OPTIONS[2]);
+  const [orgLabel, setOrgLabel] = useState('');
+  const [eventStart, setEventStart] = useState('');
+  const [eventEnd, setEventEnd] = useState('');
+  const [locationName, setLocationName] = useState('');
+  const [locationAddress, setLocationAddress] = useState('');
+  const [capacity, setCapacity] = useState('');
+  const [recruitStart, setRecruitStart] = useState('');
+  const [recruitEnd, setRecruitEnd] = useState('');
+  const [published, setPublished] = useState(false);
+  const [appliedCount, setAppliedCount] = useState(0);
   const [saving, setSaving] = useState(false);
   const [publicUrl, setPublicUrl] = useState('');
 
@@ -38,6 +50,17 @@ export default function EventDetailPage() {
     setSections(evData.event.sections || []);
     setQuestions(evData.event.questions || cloneDefaultApplyTemplate().questions);
     setLinkedSurveyId(evData.event.linkedSurveyId || '');
+    setCategory(evData.event.category || CATEGORY_OPTIONS[2]);
+    setOrgLabel(evData.event.orgLabel || '');
+    setEventStart(evData.event.eventStart || '');
+    setEventEnd(evData.event.eventEnd || '');
+    setLocationName(evData.event.locationName || '');
+    setLocationAddress(evData.event.locationAddress || '');
+    setCapacity(evData.event.capacity || '');
+    setRecruitStart(evData.event.recruitStart || '');
+    setRecruitEnd(evData.event.recruitEnd || '');
+    setPublished(!!evData.event.published);
+    setAppliedCount(evData.appliedCount || 0);
     setSurveys(svData.surveys || []);
   }
 
@@ -80,6 +103,16 @@ export default function EventDetailPage() {
         sections,
         questions: questions.map((q) => ({ ...q, options: (q.options || []).map((o) => o.trim()).filter(Boolean) })),
         linkedSurveyId: linkedSurveyId || null,
+        category,
+        orgLabel,
+        eventStart,
+        eventEnd,
+        locationName,
+        locationAddress,
+        capacity,
+        recruitStart,
+        recruitEnd,
+        published,
       }),
     });
     setSaving(false);
@@ -120,6 +153,82 @@ export default function EventDetailPage() {
               placeholder="예: 홍길동"
             />
           </div>
+
+          <div className="rounded-lg border border-gray-100 bg-gray-50 p-3 text-sm">
+            현재 신청 <strong>{appliedCount}명</strong>
+            {capacity ? ` / 정원 ${capacity}명` : ' (정원 제한 없음)'}
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <label className="block text-sm font-semibold mb-1">분류</label>
+              <select className="input-base" value={category} onChange={(e) => setCategory(e.target.value)}>
+                {CATEGORY_OPTIONS.map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-semibold mb-1">태그 (예: 처인구, 공동체팀)</label>
+              <input className="input-base" value={orgLabel} onChange={(e) => setOrgLabel(e.target.value)} placeholder="선택 입력" />
+            </div>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <label className="block text-sm font-semibold mb-1">시작 일시</label>
+              <input
+                type="datetime-local"
+                className="input-base"
+                value={eventStart}
+                onClick={(e) => e.currentTarget.showPicker?.()}
+                onChange={(e) => setEventStart(e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold mb-1">종료 일시 (선택)</label>
+              <input
+                type="datetime-local"
+                className="input-base"
+                value={eventEnd}
+                onClick={(e) => e.currentTarget.showPicker?.()}
+                onChange={(e) => setEventEnd(e.target.value)}
+              />
+            </div>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <label className="block text-sm font-semibold mb-1">장소명</label>
+              <input className="input-base" value={locationName} onChange={(e) => setLocationName(e.target.value)} placeholder="예: 오이도작은도서관" />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold mb-1">주소</label>
+              <input className="input-base" value={locationAddress} onChange={(e) => setLocationAddress(e.target.value)} placeholder="지도 링크에 사용됩니다" />
+            </div>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-3">
+            <div>
+              <label className="block text-sm font-semibold mb-1">정원 (0 = 제한 없음)</label>
+              <input type="number" min="0" className="input-base" value={capacity} onChange={(e) => setCapacity(e.target.value)} placeholder="0" />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold mb-1">모집 시작일</label>
+              <input type="date" className="input-base" value={recruitStart} onClick={(e) => e.currentTarget.showPicker?.()} onChange={(e) => setRecruitStart(e.target.value)} />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold mb-1">모집 마감일</label>
+              <input type="date" className="input-base" value={recruitEnd} onClick={(e) => e.currentTarget.showPicker?.()} onChange={(e) => setRecruitEnd(e.target.value)} />
+            </div>
+          </div>
+
+          <label className="flex items-center gap-2 text-sm font-semibold">
+            <input type="checkbox" checked={published} onChange={(e) => setPublished(e.target.checked)} />
+            홈페이지에 공개
+          </label>
 
           <div>
             <label className="block text-sm font-semibold mb-1">포스터/대표 이미지</label>

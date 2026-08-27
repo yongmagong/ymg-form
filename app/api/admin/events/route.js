@@ -4,14 +4,14 @@ import { getAuthedRequestUser } from '@/lib/auth';
 import { cloneDefaultSurveyTemplate } from '@/lib/defaultSurvey';
 import { cloneDefaultApplyTemplate } from '@/lib/defaultApply';
 import { validateConfigImages } from '@/lib/imageData';
-import { EVENTS_TAB, SURVEYS_TAB, listConfig, upsertConfig } from '@/lib/sheets';
+import { EVENTS_TAB, SURVEYS_TAB, listConfig, upsertConfig, getApplyCountsByEvent } from '@/lib/sheets';
 
 export async function GET(request) {
   const user = await getAuthedRequestUser(request);
   if (!user) return NextResponse.json({ error: '인증 필요' }, { status: 401 });
   try {
-    const events = await listConfig(EVENTS_TAB);
-    return NextResponse.json({ events, currentUser: user });
+    const [events, appliedCounts] = await Promise.all([listConfig(EVENTS_TAB), getApplyCountsByEvent()]);
+    return NextResponse.json({ events, appliedCounts, currentUser: user });
   } catch (error) {
     console.error('Failed to load events', error);
     return NextResponse.json(
@@ -96,6 +96,16 @@ export async function POST(request) {
       sections: body.sections || applyTemplate.sections,
       questions: body.questions || applyTemplate.questions,
       linkedSurveyId: survey.id,
+      category: body.category || '행사',
+      orgLabel: body.orgLabel || '',
+      eventStart: body.eventStart || '',
+      eventEnd: body.eventEnd || '',
+      locationName: body.locationName || '',
+      locationAddress: body.locationAddress || '',
+      capacity: body.capacity ? Number(body.capacity) : 0,
+      recruitStart: body.recruitStart || '',
+      recruitEnd: body.recruitEnd || '',
+      published: body.published !== undefined ? !!body.published : true,
       createdAt: new Date().toISOString(),
     };
     validateConfigImages(event);

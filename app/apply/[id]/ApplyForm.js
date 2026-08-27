@@ -156,12 +156,21 @@ function Field({ question, value, onChange }) {
   );
 }
 
-export default function ApplyForm({ eventId, questions }) {
+export default function ApplyForm({ eventId, questions, closed }) {
   const applyQuestions = questions?.length ? questions : cloneDefaultApplyTemplate().questions;
   const [answers, setAnswers] = useState(() => initialAnswers(applyQuestions));
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [result, setResult] = useState(null);
+
+  if (closed) {
+    return (
+      <div className="card text-center space-y-2">
+        <p className="text-lg font-bold text-gray-600">모집이 종료되었습니다</p>
+        <p className="text-gray-400 text-sm">다음 기회에 함께해 주세요.</p>
+      </div>
+    );
+  }
 
   function isMissingAnswer(question) {
     const answer = answers[question.id];

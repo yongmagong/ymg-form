@@ -3,15 +3,27 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { MAX_INLINE_IMAGE_CHARS } from '@/lib/imageData';
+import { CATEGORY_OPTIONS } from '@/lib/eventOptions';
 
 export default function EventsPage() {
   const [events, setEvents] = useState(null);
+  const [appliedCounts, setAppliedCounts] = useState({});
   const [currentUser, setCurrentUser] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [title, setTitle] = useState('');
   const [ownerName, setOwnerName] = useState('');
   const [imageUrl, setImageUrl] = useState('');
   const [sections, setSections] = useState([{ label: '소개', content: '' }]);
+  const [category, setCategory] = useState(CATEGORY_OPTIONS[2]);
+  const [orgLabel, setOrgLabel] = useState('');
+  const [eventStart, setEventStart] = useState('');
+  const [eventEnd, setEventEnd] = useState('');
+  const [locationName, setLocationName] = useState('');
+  const [locationAddress, setLocationAddress] = useState('');
+  const [capacity, setCapacity] = useState('');
+  const [recruitStart, setRecruitStart] = useState('');
+  const [recruitEnd, setRecruitEnd] = useState('');
+  const [published, setPublished] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
@@ -22,6 +34,7 @@ export default function EventsPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || '신청서 목록을 불러오지 못했습니다.');
       setEvents(data.events || []);
+      setAppliedCounts(data.appliedCounts || {});
       setCurrentUser(data.currentUser || null);
       setOwnerName((prev) => prev || data.currentUser?.displayName || '');
     } catch (err) {
@@ -66,7 +79,22 @@ export default function EventsPage() {
     const res = await fetch('/api/admin/events', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title, ownerName, imageUrl, sections: sections.filter((s) => s.label || s.content) }),
+      body: JSON.stringify({
+        title,
+        ownerName,
+        imageUrl,
+        sections: sections.filter((s) => s.label || s.content),
+        category,
+        orgLabel,
+        eventStart,
+        eventEnd,
+        locationName,
+        locationAddress,
+        capacity,
+        recruitStart,
+        recruitEnd,
+        published,
+      }),
     });
     const data = await res.json();
     setSaving(false);
@@ -79,6 +107,16 @@ export default function EventsPage() {
     setOwnerName(currentUser?.displayName || '');
     setImageUrl('');
     setSections([{ label: '소개', content: '' }]);
+    setCategory(CATEGORY_OPTIONS[2]);
+    setOrgLabel('');
+    setEventStart('');
+    setEventEnd('');
+    setLocationName('');
+    setLocationAddress('');
+    setCapacity('');
+    setRecruitStart('');
+    setRecruitEnd('');
+    setPublished(true);
     load();
   }
 
@@ -111,11 +149,20 @@ export default function EventsPage() {
             <Link href={`/admin/events/${ev.id}`} className="min-w-0 flex-1 block">
               <div className="flex flex-wrap items-center gap-2">
                 <p className="font-semibold truncate">{ev.title}</p>
+                {ev.category && (
+                  <span className="text-xs rounded-full bg-gray-100 text-gray-600 px-2 py-1">{ev.category}</span>
+                )}
                 <span className="text-xs rounded-full bg-brand-50 text-brand-700 px-2 py-1">
                   담당 {ev.ownerName || ev.createdByName || '미지정'}
                 </span>
+                <span className={`text-xs rounded-full px-2 py-1 ${ev.published ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                  {ev.published ? '공개' : '비공개'}
+                </span>
               </div>
-              <p className="text-xs text-gray-400 mt-1">{new Date(ev.createdAt).toLocaleDateString('ko-KR')}</p>
+              <p className="text-xs text-gray-400 mt-1">
+                신청 {appliedCounts[ev.id] || 0}명{ev.capacity ? ` / 정원 ${ev.capacity}명` : ''} ·{' '}
+                {new Date(ev.createdAt).toLocaleDateString('ko-KR')}
+              </p>
             </Link>
             {showCopy ? (
               <button type="button" onClick={() => copyEvent(ev.id)} className="btn-secondary text-xs whitespace-nowrap">
@@ -162,6 +209,77 @@ export default function EventsPage() {
               required
             />
           </div>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <label className="block text-sm font-semibold mb-1">분류</label>
+              <select className="input-base" value={category} onChange={(e) => setCategory(e.target.value)}>
+                {CATEGORY_OPTIONS.map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-semibold mb-1">태그 (예: 처인구, 공동체팀)</label>
+              <input className="input-base" value={orgLabel} onChange={(e) => setOrgLabel(e.target.value)} placeholder="선택 입력" />
+            </div>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <label className="block text-sm font-semibold mb-1">시작 일시</label>
+              <input
+                type="datetime-local"
+                className="input-base"
+                value={eventStart}
+                onClick={(e) => e.currentTarget.showPicker?.()}
+                onChange={(e) => setEventStart(e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold mb-1">종료 일시 (선택)</label>
+              <input
+                type="datetime-local"
+                className="input-base"
+                value={eventEnd}
+                onClick={(e) => e.currentTarget.showPicker?.()}
+                onChange={(e) => setEventEnd(e.target.value)}
+              />
+            </div>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <label className="block text-sm font-semibold mb-1">장소명</label>
+              <input className="input-base" value={locationName} onChange={(e) => setLocationName(e.target.value)} placeholder="예: 오이도작은도서관" />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold mb-1">주소</label>
+              <input className="input-base" value={locationAddress} onChange={(e) => setLocationAddress(e.target.value)} placeholder="지도 링크에 사용됩니다" />
+            </div>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-3">
+            <div>
+              <label className="block text-sm font-semibold mb-1">정원 (0 = 제한 없음)</label>
+              <input type="number" min="0" className="input-base" value={capacity} onChange={(e) => setCapacity(e.target.value)} placeholder="0" />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold mb-1">모집 시작일</label>
+              <input type="date" className="input-base" value={recruitStart} onClick={(e) => e.currentTarget.showPicker?.()} onChange={(e) => setRecruitStart(e.target.value)} />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold mb-1">모집 마감일</label>
+              <input type="date" className="input-base" value={recruitEnd} onClick={(e) => e.currentTarget.showPicker?.()} onChange={(e) => setRecruitEnd(e.target.value)} />
+            </div>
+          </div>
+
+          <label className="flex items-center gap-2 text-sm font-semibold">
+            <input type="checkbox" checked={published} onChange={(e) => setPublished(e.target.checked)} />
+            홈페이지에 공개
+          </label>
 
           <div>
             <label className="block text-sm font-semibold mb-1">포스터/대표 이미지</label>

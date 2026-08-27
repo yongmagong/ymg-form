@@ -21,6 +21,9 @@ export default async function AdminLayout({ children }) {
             <Link href="/admin/surveys" className="hover:text-brand-600">
               만족도 설문조사
             </Link>
+            <Link href="/admin/records" className="hover:text-brand-600">
+              기록함
+            </Link>
             <LogoutButton />
           </nav>
         </div>
