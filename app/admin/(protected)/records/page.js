@@ -206,7 +206,7 @@ export default function RecordsPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-semibold mb-2">첨부파일 (PDF, HTML)</label>
+            <label className="block text-sm font-semibold mb-2">첨부파일 (PDF, HTML, MD)</label>
             <AttachmentUploader attachments={attachments} setAttachments={setAttachments} />
           </div>
 
