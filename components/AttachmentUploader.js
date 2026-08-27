@@ -6,6 +6,14 @@ import { upload } from '@vercel/blob/client';
 const EXT_KIND = { pdf: 'pdf', html: 'html', htm: 'html', md: 'md', markdown: 'md' };
 const SAFETY_TIMEOUT_MS = 5 * 60 * 1000;
 
+// Vercel Blob rejects non-ASCII (e.g. Korean) pathnames with a 400. Storage
+// key is derived from the extension only; the original filename is kept
+// separately as the display name.
+function safeStorageName(filename) {
+  const ext = filename.split('.').pop()?.toLowerCase() || 'bin';
+  return `attachment-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+}
+
 export default function AttachmentUploader({ attachments, setAttachments }) {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
@@ -30,7 +38,7 @@ export default function AttachmentUploader({ attachments, setAttachments }) {
       // streamed fetch upload (duplex: 'half'), which some networks/proxies
       // hang on indefinitely right near completion. Plain buffered upload is
       // slower to show feedback but actually finishes.
-      const blob = await upload(file.name, file, {
+      const blob = await upload(safeStorageName(file.name), file, {
         access: 'public',
         handleUploadUrl: '/api/admin/upload',
         multipart: file.size > 5 * 1024 * 1024,
