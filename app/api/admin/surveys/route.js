@@ -1,6 +1,7 @@
 import crypto from 'crypto';
 import { NextResponse } from 'next/server';
 import { getAuthedRequestUser } from '@/lib/auth';
+import { validateConfigImages } from '@/lib/imageData';
 import { SURVEYS_TAB, listConfig, upsertConfig } from '@/lib/sheets';
 
 export async function GET(request) {
@@ -37,6 +38,7 @@ export async function POST(request) {
         linkedEventId: null,
         createdAt: new Date().toISOString(),
       };
+      validateConfigImages(copied);
       await upsertConfig(SURVEYS_TAB, copied);
       return NextResponse.json({ survey: copied });
     }
@@ -64,12 +66,13 @@ export async function POST(request) {
       linkedEventId: body.linkedEventId || null,
       createdAt: new Date().toISOString(),
     };
+    validateConfigImages(survey);
     await upsertConfig(SURVEYS_TAB, survey);
     return NextResponse.json({ survey });
   } catch (error) {
     console.error('Failed to create survey', error);
     return NextResponse.json(
-      { error: '설문조사를 만들 수 없습니다. 구글시트 연동 환경변수를 확인해 주세요.' },
+      { error: error.message || '설문조사를 만들 수 없습니다. 구글시트 연동 환경변수를 확인해 주세요.' },
       { status: 500 }
     );
   }

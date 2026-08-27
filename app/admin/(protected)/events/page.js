@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { MAX_INLINE_IMAGE_CHARS } from '@/lib/imageData';
 
 export default function EventsPage() {
   const [events, setEvents] = useState(null);
@@ -48,7 +49,13 @@ export default function EventsPage() {
   function readImageFile(file) {
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = () => setImageUrl(reader.result);
+    reader.onload = () => {
+      if (String(reader.result || '').length > MAX_INLINE_IMAGE_CHARS) {
+        setError('이미지 파일 용량이 큽니다. 포스터는 파일 대신 공개 이미지 링크를 넣어 주세요.');
+        return;
+      }
+      setImageUrl(reader.result);
+    };
     reader.readAsDataURL(file);
   }
 

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getAuthedRequestUser } from '@/lib/auth';
+import { validateConfigImages } from '@/lib/imageData';
 import { EVENTS_TAB, getConfigById, upsertConfig, deleteConfig } from '@/lib/sheets';
 
 export async function GET(request, { params }) {
@@ -25,6 +26,7 @@ export async function PUT(request, { params }) {
     questions: body.questions ?? existing.questions,
     linkedSurveyId: body.linkedSurveyId !== undefined ? body.linkedSurveyId : existing.linkedSurveyId,
   };
+  validateConfigImages(updated);
   await upsertConfig(EVENTS_TAB, updated);
   return NextResponse.json({ event: updated });
 }

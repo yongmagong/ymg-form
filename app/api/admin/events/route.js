@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import { getAuthedRequestUser } from '@/lib/auth';
 import { cloneDefaultSurveyTemplate } from '@/lib/defaultSurvey';
 import { cloneDefaultApplyTemplate } from '@/lib/defaultApply';
+import { validateConfigImages } from '@/lib/imageData';
 import { EVENTS_TAB, SURVEYS_TAB, listConfig, upsertConfig } from '@/lib/sheets';
 
 export async function GET(request) {
@@ -60,6 +61,7 @@ export async function POST(request) {
         linkedSurveyId: copiedSurveyId,
         createdAt: new Date().toISOString(),
       };
+      validateConfigImages(copied);
       if (copiedSurveyId) {
         const copiedSurvey = await listConfig(SURVEYS_TAB).then((surveys) =>
           surveys.find((item) => item.id === copiedSurveyId)
@@ -96,13 +98,14 @@ export async function POST(request) {
       linkedSurveyId: survey.id,
       createdAt: new Date().toISOString(),
     };
+    validateConfigImages(event);
     await upsertConfig(SURVEYS_TAB, survey);
     await upsertConfig(EVENTS_TAB, event);
     return NextResponse.json({ event });
   } catch (error) {
     console.error('Failed to create event', error);
     return NextResponse.json(
-      { error: '신청서를 만들 수 없습니다. 구글시트 연동 환경변수를 확인해 주세요.' },
+      { error: error.message || '신청서를 만들 수 없습니다. 구글시트 연동 환경변수를 확인해 주세요.' },
       { status: 500 }
     );
   }

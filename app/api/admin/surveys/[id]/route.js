@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getAuthedRequestUser } from '@/lib/auth';
+import { validateConfigImages } from '@/lib/imageData';
 import { SURVEYS_TAB, getConfigById, upsertConfig, deleteConfig } from '@/lib/sheets';
 
 export async function GET(request, { params }) {
@@ -37,6 +38,7 @@ export async function PUT(request, { params }) {
       })) ?? existing.questions,
     linkedEventId: body.linkedEventId !== undefined ? body.linkedEventId : existing.linkedEventId,
   };
+  validateConfigImages(updated);
   await upsertConfig(SURVEYS_TAB, updated);
   return NextResponse.json({ survey: updated });
 }

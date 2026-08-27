@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import { MAX_INLINE_IMAGE_CHARS } from '@/lib/imageData';
 
 const TYPE_LABELS = {
   text: '단답형',
@@ -62,7 +63,13 @@ export default function QuestionBuilder({ questions, setQuestions }) {
   function readImageFile(file, callback) {
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = () => callback(reader.result);
+    reader.onload = () => {
+      if (String(reader.result || '').length > MAX_INLINE_IMAGE_CHARS) {
+        alert('이미지 파일 용량이 큽니다. 큰 이미지는 파일 대신 공개 이미지 링크를 넣어 주세요.');
+        return;
+      }
+      callback(reader.result);
+    };
     reader.readAsDataURL(file);
   }
 
