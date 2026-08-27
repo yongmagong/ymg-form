@@ -16,7 +16,7 @@ export async function POST(request) {
         // Content-type sniffing for .md files is unreliable across browsers/OS,
         // so file type is validated by extension client-side (admin-only endpoint) instead.
         addRandomSuffix: true,
-        maximumSizeInBytes: 25 * 1024 * 1024,
+        maximumSizeInBytes: 200 * 1024 * 1024,
       }),
     });
     return NextResponse.json(jsonResponse);

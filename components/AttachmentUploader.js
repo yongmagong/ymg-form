@@ -74,7 +74,7 @@ export default function AttachmentUploader({ attachments, setAttachments }) {
         </div>
       )}
       {error && <p className="text-xs text-red-600">{error}</p>}
-      <p className="text-xs text-gray-400">PDF, HTML, MD 파일을 첨부할 수 있습니다. (최대 25MB)</p>
+      <p className="text-xs text-gray-400">PDF, HTML, MD 파일을 첨부할 수 있습니다. (최대 200MB)</p>
     </div>
   );
 }
