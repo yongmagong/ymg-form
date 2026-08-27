@@ -7,6 +7,7 @@ const EXT_KIND = { pdf: 'pdf', html: 'html', htm: 'html', md: 'md', markdown: 'm
 
 export default function AttachmentUploader({ attachments, setAttachments }) {
   const [uploading, setUploading] = useState(false);
+  const [progress, setProgress] = useState(0);
   const [error, setError] = useState('');
 
   async function handleFile(file) {
@@ -19,10 +20,13 @@ export default function AttachmentUploader({ attachments, setAttachments }) {
       return;
     }
     setUploading(true);
+    setProgress(0);
     try {
       const blob = await upload(file.name, file, {
         access: 'public',
         handleUploadUrl: '/api/admin/upload',
+        multipart: file.size > 5 * 1024 * 1024,
+        onUploadProgress: ({ percentage }) => setProgress(percentage),
       });
       setAttachments((prev) => [...prev, { name: file.name, url: blob.url, kind }]);
     } catch (err) {
@@ -61,7 +65,14 @@ export default function AttachmentUploader({ attachments, setAttachments }) {
           e.target.value = '';
         }}
       />
-      {uploading && <p className="text-xs text-gray-400">업로드 중...</p>}
+      {uploading && (
+        <div className="space-y-1">
+          <div className="h-1.5 w-full rounded-full bg-gray-100 overflow-hidden">
+            <div className="h-full bg-brand-500 transition-all" style={{ width: `${progress}%` }} />
+          </div>
+          <p className="text-xs text-gray-400">업로드 중... {progress}%</p>
+        </div>
+      )}
       {error && <p className="text-xs text-red-600">{error}</p>}
       <p className="text-xs text-gray-400">PDF, HTML, MD 파일을 첨부할 수 있습니다. (최대 25MB)</p>
     </div>
