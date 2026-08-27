@@ -1,6 +1,8 @@
+import { recordCardHref } from '@/lib/recordLink';
+
 function RecordCard({ record, eventTitle }) {
   return (
-    <a href={`/records/${record.id}`} className="card block overflow-hidden hover:shadow-md transition-shadow p-0">
+    <a href={recordCardHref(record)} className="card block overflow-hidden hover:shadow-md transition-shadow p-0">
       <div className="aspect-[4/3] bg-gray-100">
         {record.imageUrl ? (
           <img src={record.imageUrl} alt={record.title} className="w-full h-full object-cover" />

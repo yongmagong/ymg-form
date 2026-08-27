@@ -1,4 +1,5 @@
 import { EVENTS_TAB, RECORDS_TAB, listConfig } from '@/lib/sheets';
+import { recordCardHref } from '@/lib/recordLink';
 import SiteHeader from '../SiteHeader';
 
 export const dynamic = 'force-dynamic';
@@ -27,7 +28,7 @@ export default async function RecordsListPage() {
         ) : (
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {published.map((r) => (
-              <a key={r.id} href={`/records/${r.id}`} className="card block overflow-hidden hover:shadow-md transition-shadow p-0">
+              <a key={r.id} href={recordCardHref(r)} className="card block overflow-hidden hover:shadow-md transition-shadow p-0">
                 <div className="aspect-[4/3] bg-gray-100">
                   {r.imageUrl ? (
                     <img src={r.imageUrl} alt={r.title} className="w-full h-full object-cover" />
