@@ -1,7 +1,7 @@
 import { EVENTS_TAB, getConfigById, getApplyCountsByEvent } from '@/lib/sheets';
 import { computeEventStatus, formatDateRange, formatRecruitPeriod } from '@/lib/eventStatus';
 import SiteHeader from '../../SiteHeader';
-import ApplyForm from './ApplyForm';
+import ApplyGate from './ApplyGate';
 
 export const dynamic = 'force-dynamic';
 
@@ -32,7 +32,7 @@ export default async function ApplyPage({ params }) {
     : null;
 
   return (
-    <main className="min-h-screen pb-28">
+    <main className="min-h-screen">
       <SiteHeader />
       <div className="max-w-2xl mx-auto space-y-6 p-4 sm:p-8">
         <div className="card">
@@ -98,18 +98,8 @@ export default async function ApplyPage({ params }) {
           </div>
         </div>
 
-        <div id="apply-form" className="scroll-mt-20">
-          <ApplyForm eventId={event.id} questions={event.questions} closed={status.closed} />
-        </div>
+        <ApplyGate eventId={event.id} questions={event.questions} closed={status.closed} />
       </div>
-
-      {!status.closed && (
-        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 sm:hidden">
-          <a href="#apply-form" className="btn-primary w-full text-center block text-lg">
-            신청하기
-          </a>
-        </div>
-      )}
     </main>
   );
 }
