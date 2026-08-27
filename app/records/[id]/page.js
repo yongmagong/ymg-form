@@ -1,4 +1,5 @@
 import { EVENTS_TAB, RECORDS_TAB, getConfigById } from '@/lib/sheets';
+import SiteHeader from '../../SiteHeader';
 
 export const dynamic = 'force-dynamic';
 
@@ -7,8 +8,11 @@ export default async function RecordDetailPublicPage({ params }) {
 
   if (!record || !record.published) {
     return (
-      <main className="min-h-screen flex items-center justify-center p-6">
-        <p className="text-gray-500">존재하지 않는 기록입니다.</p>
+      <main className="min-h-screen">
+        <SiteHeader />
+        <div className="flex items-center justify-center p-6">
+          <p className="text-gray-500">존재하지 않는 기록입니다.</p>
+        </div>
       </main>
     );
   }
@@ -16,8 +20,9 @@ export default async function RecordDetailPublicPage({ params }) {
   const linkedEvent = record.linkedEventId ? await getConfigById(EVENTS_TAB, record.linkedEventId) : null;
 
   return (
-    <main className="min-h-screen p-4 sm:p-8">
-      <div className="max-w-2xl mx-auto space-y-6">
+    <main className="min-h-screen">
+      <SiteHeader />
+      <div className="max-w-2xl mx-auto space-y-6 p-4 sm:p-8">
         <div className="card">
           {record.imageUrl && (
             <div className="mb-5 overflow-hidden rounded-lg border border-gray-200 bg-gray-50">

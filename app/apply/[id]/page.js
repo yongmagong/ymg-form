@@ -1,5 +1,6 @@
 import { EVENTS_TAB, getConfigById, getApplyCountsByEvent } from '@/lib/sheets';
 import { computeEventStatus, formatDateRange, formatRecruitPeriod } from '@/lib/eventStatus';
+import SiteHeader from '../../SiteHeader';
 import ApplyForm from './ApplyForm';
 
 export const dynamic = 'force-dynamic';
@@ -9,8 +10,11 @@ export default async function ApplyPage({ params }) {
 
   if (!event) {
     return (
-      <main className="min-h-screen flex items-center justify-center p-6">
-        <p className="text-gray-500">존재하지 않는 신청서입니다.</p>
+      <main className="min-h-screen">
+        <SiteHeader />
+        <div className="flex items-center justify-center p-6">
+          <p className="text-gray-500">존재하지 않는 신청서입니다.</p>
+        </div>
       </main>
     );
   }
@@ -28,8 +32,9 @@ export default async function ApplyPage({ params }) {
     : null;
 
   return (
-    <main className="min-h-screen p-4 sm:p-8 pb-28">
-      <div className="max-w-2xl mx-auto space-y-6">
+    <main className="min-h-screen pb-28">
+      <SiteHeader />
+      <div className="max-w-2xl mx-auto space-y-6 p-4 sm:p-8">
         <div className="card">
           {event.imageUrl && (
             <div className="mb-5 overflow-hidden rounded-lg border border-gray-200 bg-gray-50">

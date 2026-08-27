@@ -75,7 +75,7 @@ export default function HomeCatalog({ events }) {
       {filtered.length === 0 ? (
         <p className="text-gray-400 text-sm py-12 text-center">현재 게시된 모임/행사가 없습니다.</p>
       ) : (
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {filtered.map((event) => (
             <EventCard key={event.id} event={event} />
           ))}

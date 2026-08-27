@@ -1,4 +1,5 @@
 import { EVENTS_TAB, RECORDS_TAB, listConfig } from '@/lib/sheets';
+import SiteHeader from '../SiteHeader';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,18 +19,9 @@ export default async function RecordsListPage() {
 
   return (
     <main className="min-h-screen">
-      <header className="bg-white border-b border-gray-200">
-        <div className="max-w-5xl mx-auto px-4 py-5 flex items-center justify-between">
-          <div>
-            <p className="text-xs text-gray-400">용인시 마을공동체지원센터</p>
-            <h1 className="text-xl font-bold text-brand-700">기록함</h1>
-          </div>
-          <a href="/" className="text-sm text-gray-400 hover:text-brand-600">
-            교육행사 보기
-          </a>
-        </div>
-      </header>
-      <div className="max-w-5xl mx-auto px-4 py-8">
+      <SiteHeader />
+      <div className="max-w-6xl mx-auto px-4 py-8">
+        <h1 className="text-xl font-bold mb-6">기록함</h1>
         {published.length === 0 ? (
           <p className="text-gray-400 text-sm py-12 text-center">아직 게시된 기록이 없습니다.</p>
         ) : (
