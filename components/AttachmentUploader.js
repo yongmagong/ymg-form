@@ -4,26 +4,13 @@ import { useRef, useState } from 'react';
 import { upload } from '@vercel/blob/client';
 
 const EXT_KIND = { pdf: 'pdf', html: 'html', htm: 'html', md: 'md', markdown: 'md' };
-const STALL_TIMEOUT_MS = 30000;
+const SAFETY_TIMEOUT_MS = 5 * 60 * 1000;
 
 export default function AttachmentUploader({ attachments, setAttachments }) {
   const [uploading, setUploading] = useState(false);
-  const [progress, setProgress] = useState(0);
   const [error, setError] = useState('');
   const abortControllerRef = useRef(null);
-  const stallTimerRef = useRef(null);
-
-  function clearStallTimer() {
-    if (stallTimerRef.current) clearTimeout(stallTimerRef.current);
-    stallTimerRef.current = null;
-  }
-
-  function armStallTimer(controller) {
-    clearStallTimer();
-    stallTimerRef.current = setTimeout(() => {
-      controller.abort();
-    }, STALL_TIMEOUT_MS);
-  }
+  const safetyTimerRef = useRef(null);
 
   async function handleFile(file) {
     if (!file) return;
@@ -37,28 +24,27 @@ export default function AttachmentUploader({ attachments, setAttachments }) {
     const controller = new AbortController();
     abortControllerRef.current = controller;
     setUploading(true);
-    setProgress(0);
-    armStallTimer(controller);
+    safetyTimerRef.current = setTimeout(() => controller.abort(), SAFETY_TIMEOUT_MS);
     try {
+      // No onUploadProgress here on purpose: passing it switches this SDK to a
+      // streamed fetch upload (duplex: 'half'), which some networks/proxies
+      // hang on indefinitely right near completion. Plain buffered upload is
+      // slower to show feedback but actually finishes.
       const blob = await upload(file.name, file, {
         access: 'public',
         handleUploadUrl: '/api/admin/upload',
         multipart: file.size > 5 * 1024 * 1024,
         abortSignal: controller.signal,
-        onUploadProgress: ({ percentage }) => {
-          setProgress(percentage);
-          armStallTimer(controller);
-        },
       });
       setAttachments((prev) => [...prev, { name: file.name, url: blob.url, kind }]);
     } catch (err) {
       if (controller.signal.aborted) {
-        setError('업로드가 지연되어 중단했습니다. 네트워크 상태를 확인하고 다시 시도해 주세요.');
+        setError('업로드를 중단했습니다.');
       } else {
         setError(err.message || '업로드에 실패했습니다.');
       }
     }
-    clearStallTimer();
+    clearTimeout(safetyTimerRef.current);
     abortControllerRef.current = null;
     setUploading(false);
   }
@@ -99,12 +85,10 @@ export default function AttachmentUploader({ attachments, setAttachments }) {
       />
       {uploading && (
         <div className="space-y-1">
-          <div className="h-1.5 w-full rounded-full bg-gray-100 overflow-hidden">
-            <div className="h-full bg-brand-500 transition-all" style={{ width: `${progress}%` }} />
-          </div>
+          <div className="h-1.5 w-full rounded-full bg-brand-200 animate-pulse" />
           <div className="flex items-center justify-between">
-            <p className="text-xs text-gray-400">업로드 중... {progress}%</p>
-            <button type="button" onClick={cancelUpload} className="text-xs text-gray-400 hover:text-red-600">
+            <p className="text-xs text-gray-400">업로드 중입니다. 파일 크기에 따라 시간이 걸릴 수 있어요...</p>
+            <button type="button" onClick={cancelUpload} className="text-xs text-gray-400 hover:text-red-600 whitespace-nowrap">
               취소
             </button>
           </div>
