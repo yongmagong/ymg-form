@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { MAX_INLINE_IMAGE_CHARS } from '@/lib/imageData';
+import AttachmentUploader from '@/components/AttachmentUploader';
 
 export default function RecordsPage() {
   const [records, setRecords] = useState(null);
@@ -14,6 +15,7 @@ export default function RecordsPage() {
   const [linkedEventId, setLinkedEventId] = useState('');
   const [imageUrl, setImageUrl] = useState('');
   const [sections, setSections] = useState([{ label: '후기', content: '' }]);
+  const [attachments, setAttachments] = useState([]);
   const [published, setPublished] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -75,6 +77,7 @@ export default function RecordsPage() {
         linkedEventId,
         imageUrl,
         sections: sections.filter((s) => s.label || s.content),
+        attachments,
         published,
       }),
     });
@@ -89,6 +92,7 @@ export default function RecordsPage() {
     setLinkedEventId('');
     setImageUrl('');
     setSections([{ label: '후기', content: '' }]);
+    setAttachments([]);
     setPublished(true);
     load();
   }
@@ -199,6 +203,11 @@ export default function RecordsPage() {
             <button type="button" onClick={addSection} className="btn-secondary mt-3 text-sm">
               + 항목 추가
             </button>
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold mb-2">첨부파일 (PDF, HTML)</label>
+            <AttachmentUploader attachments={attachments} setAttachments={setAttachments} />
           </div>
 
           <label className="flex items-center gap-2 text-sm font-semibold">

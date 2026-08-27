@@ -55,6 +55,23 @@ export default async function RecordDetailPublicPage({ params }) {
               ))}
             </div>
           )}
+
+          {(record.attachments || []).length > 0 && (
+            <div className="mt-6 border-t border-gray-100 pt-4 space-y-2">
+              <p className="font-semibold text-sm text-gray-500 mb-1">첨부파일</p>
+              {record.attachments.map((a, i) => (
+                <a
+                  key={i}
+                  href={a.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-brand-700 hover:bg-brand-50"
+                >
+                  📎 {a.name}
+                </a>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </main>

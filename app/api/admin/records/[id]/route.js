@@ -30,6 +30,7 @@ export async function PUT(request, { params }) {
     imageUrl: body.imageUrl ?? existing.imageUrl ?? '',
     sections: body.sections ?? existing.sections,
     images: body.images ?? existing.images ?? [],
+    attachments: body.attachments ?? existing.attachments ?? [],
     published: body.published !== undefined ? !!body.published : existing.published ?? false,
   };
   validateRecordImages(updated);

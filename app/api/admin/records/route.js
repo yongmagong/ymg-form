@@ -58,6 +58,7 @@ export async function POST(request) {
       imageUrl: body.imageUrl || '',
       sections: body.sections || [],
       images: body.images || [],
+      attachments: body.attachments || [],
       published: body.published !== undefined ? !!body.published : true,
       createdAt: new Date().toISOString(),
     };

@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { MAX_INLINE_IMAGE_CHARS } from '@/lib/imageData';
+import AttachmentUploader from '@/components/AttachmentUploader';
 
 export default function RecordDetailPage() {
   const { id } = useParams();
@@ -15,6 +16,7 @@ export default function RecordDetailPage() {
   const [imageUrl, setImageUrl] = useState('');
   const [sections, setSections] = useState([]);
   const [images, setImages] = useState([]);
+  const [attachments, setAttachments] = useState([]);
   const [published, setPublished] = useState(false);
   const [saving, setSaving] = useState(false);
   const [publicUrl, setPublicUrl] = useState('');
@@ -34,6 +36,7 @@ export default function RecordDetailPage() {
     setImageUrl(rData.record.imageUrl || '');
     setSections(rData.record.sections || []);
     setImages(rData.record.images || []);
+    setAttachments(rData.record.attachments || []);
     setPublished(!!rData.record.published);
     setEvents(eData.events || []);
   }
@@ -87,6 +90,7 @@ export default function RecordDetailPage() {
         imageUrl,
         sections,
         images: images.filter(Boolean),
+        attachments,
         published,
       }),
     });
@@ -183,6 +187,11 @@ export default function RecordDetailPage() {
             <button type="button" onClick={addImage} className="btn-secondary mt-3 text-sm">
               + 사진 추가
             </button>
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold mb-2">첨부파일 (PDF, HTML)</label>
+            <AttachmentUploader attachments={attachments} setAttachments={setAttachments} />
           </div>
 
           <label className="flex items-center gap-2 text-sm font-semibold">
