@@ -15,7 +15,7 @@ function ScaleButtons({ lowLabel, highLabel, value, onPick }) {
   return (
     <div className="space-y-2">
       <div className="flex gap-2">
-        {[1, 2, 3, 4, 5].map((n) => (
+        {[5, 4, 3, 2, 1].map((n) => (
           <button
             key={n}
             type="button"
@@ -27,8 +27,8 @@ function ScaleButtons({ lowLabel, highLabel, value, onPick }) {
         ))}
       </div>
       <div className="flex justify-between text-xs text-gray-400 px-1">
-        <span>{lowLabel || '매우 불만족'}</span>
         <span>{highLabel || '아주 만족'}</span>
+        <span>{lowLabel || '매우 불만족'}</span>
       </div>
     </div>
   );
