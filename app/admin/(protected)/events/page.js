@@ -12,6 +12,7 @@ export default function EventsPage() {
   const [showForm, setShowForm] = useState(false);
   const [title, setTitle] = useState('');
   const [ownerName, setOwnerName] = useState('');
+  const [ownerPhone, setOwnerPhone] = useState('');
   const [imageUrl, setImageUrl] = useState('');
   const [sections, setSections] = useState([{ label: '소개', content: '' }]);
   const [category, setCategory] = useState(CATEGORY_OPTIONS[2]);
@@ -78,6 +79,7 @@ export default function EventsPage() {
       body: JSON.stringify({
         title,
         ownerName,
+        ownerPhone,
         imageUrl,
         sections: sections.filter((s) => s.label || s.content),
         category,
@@ -101,6 +103,7 @@ export default function EventsPage() {
     setShowForm(false);
     setTitle('');
     setOwnerName(currentUser?.displayName || '');
+    setOwnerPhone('');
     setImageUrl('');
     setSections([{ label: '소개', content: '' }]);
     setCategory(CATEGORY_OPTIONS[2]);
@@ -195,15 +198,26 @@ export default function EventsPage() {
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-semibold mb-1">담당자 이름</label>
-            <input
-              className="input-base max-w-sm"
-              value={ownerName}
-              onChange={(e) => setOwnerName(e.target.value)}
-              placeholder="예: 홍길동"
-              required
-            />
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <label className="block text-sm font-semibold mb-1">담당자 이름</label>
+              <input
+                className="input-base"
+                value={ownerName}
+                onChange={(e) => setOwnerName(e.target.value)}
+                placeholder="예: 홍길동"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold mb-1">담당자 연락처 (선택)</label>
+              <input
+                className="input-base"
+                value={ownerPhone}
+                onChange={(e) => setOwnerPhone(e.target.value)}
+                placeholder="예: 031-335-1070"
+              />
+            </div>
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">

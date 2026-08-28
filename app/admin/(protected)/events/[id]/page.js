@@ -14,6 +14,7 @@ export default function EventDetailPage() {
   const [surveys, setSurveys] = useState([]);
   const [title, setTitle] = useState('');
   const [ownerName, setOwnerName] = useState('');
+  const [ownerPhone, setOwnerPhone] = useState('');
   const [imageUrl, setImageUrl] = useState('');
   const [sections, setSections] = useState([]);
   const [questions, setQuestions] = useState([]);
@@ -46,6 +47,7 @@ export default function EventDetailPage() {
     setEvent(evData.event);
     setTitle(evData.event.title);
     setOwnerName(evData.event.ownerName || evData.event.createdByName || '');
+    setOwnerPhone(evData.event.ownerPhone || '');
     setImageUrl(evData.event.imageUrl || '');
     setSections(evData.event.sections || []);
     setQuestions(evData.event.questions || cloneDefaultApplyTemplate().questions);
@@ -99,6 +101,7 @@ export default function EventDetailPage() {
       body: JSON.stringify({
         title,
         ownerName,
+        ownerPhone,
         imageUrl,
         sections,
         questions: questions.map((q) => ({ ...q, options: (q.options || []).map((o) => o.trim()).filter(Boolean) })),
@@ -148,14 +151,25 @@ export default function EventDetailPage() {
             <input className="input-base" value={title} onChange={(e) => setTitle(e.target.value)} />
           </div>
 
-          <div>
-            <label className="block text-sm font-semibold mb-1">담당자 이름</label>
-            <input
-              className="input-base max-w-sm"
-              value={ownerName}
-              onChange={(e) => setOwnerName(e.target.value)}
-              placeholder="예: 홍길동"
-            />
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <label className="block text-sm font-semibold mb-1">담당자 이름</label>
+              <input
+                className="input-base"
+                value={ownerName}
+                onChange={(e) => setOwnerName(e.target.value)}
+                placeholder="예: 홍길동"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold mb-1">담당자 연락처 (선택)</label>
+              <input
+                className="input-base"
+                value={ownerPhone}
+                onChange={(e) => setOwnerPhone(e.target.value)}
+                placeholder="예: 031-335-1070"
+              />
+            </div>
           </div>
 
           <div className="rounded-lg border border-gray-100 bg-gray-50 p-3 text-sm">

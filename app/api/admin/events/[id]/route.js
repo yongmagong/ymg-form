@@ -27,6 +27,7 @@ export async function PUT(request, { params }) {
     ...existing,
     title: body.title ?? existing.title,
     ownerName: body.ownerName ?? existing.ownerName ?? user.displayName,
+    ownerPhone: body.ownerPhone ?? existing.ownerPhone ?? '',
     ownerEmail: body.ownerEmail ?? existing.ownerEmail ?? user.email,
     imageUrl: body.imageUrl ?? existing.imageUrl ?? '',
     sections: body.sections ?? existing.sections,

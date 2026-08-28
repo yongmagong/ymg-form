@@ -86,6 +86,7 @@ export async function POST(request) {
       id: eventId,
       title: body.title || applyTemplate.title,
       ownerName: body.ownerName || user.displayName,
+      ownerPhone: body.ownerPhone || '',
       ownerEmail: user.email,
       createdByEmail: user.email,
       createdByName: user.displayName,

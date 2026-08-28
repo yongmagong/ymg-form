@@ -37,8 +37,11 @@ function EventCard({ event }) {
         <h3 className="font-bold leading-snug line-clamp-2 min-h-[2.6em]">{event.title}</h3>
 
         <div className="flex items-center gap-1.5 text-xs text-gray-500 pt-1">
-          <span className="w-4 h-4 rounded-full bg-brand-500 inline-block" />
-          <span>{event.ownerName || event.createdByName || '관리자'}</span>
+          <span className="w-4 h-4 rounded-full bg-brand-500 inline-block flex-shrink-0" />
+          <span>
+            교육/행사담당,문의:{event.ownerName || event.createdByName || '관리자'}
+            {event.ownerPhone ? ` (${event.ownerPhone})` : ''}
+          </span>
         </div>
 
         <div className="text-xs text-gray-500 space-y-1 pt-1">
