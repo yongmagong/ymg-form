@@ -17,7 +17,7 @@ export default function SiteHeader() {
             만족도설문조사
           </a>
           <a href="/admin" className="hover:text-brand-600">
-            관리자
+            담당자
           </a>
         </nav>
       </div>

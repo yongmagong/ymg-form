@@ -12,7 +12,7 @@ export default async function AdminLayout({ children }) {
       <header className="bg-white border-b border-gray-200">
         <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
           <Link href="/admin" className="font-bold text-brand-700">
-            마을공동체지원센터 관리자
+            마을공동체지원센터 담당자
           </Link>
           <nav className="flex items-center gap-4 text-sm font-medium">
             <Link href="/admin/events" className="hover:text-brand-600">

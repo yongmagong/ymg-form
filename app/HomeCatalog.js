@@ -39,7 +39,7 @@ function EventCard({ event }) {
         <div className="flex items-center gap-1.5 text-xs text-gray-500 pt-1">
           <span className="w-4 h-4 rounded-full bg-brand-500 inline-block flex-shrink-0" />
           <span>
-            교육/행사담당,문의:{event.ownerName || event.createdByName || '관리자'}
+            교육/행사담당,문의:{event.ownerName || event.createdByName || '담당자'}
             {event.ownerPhone ? ` (${event.ownerPhone})` : ''}
           </span>
         </div>
