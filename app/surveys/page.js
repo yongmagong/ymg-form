@@ -12,9 +12,9 @@ export default async function SurveysListPage() {
     console.error('Failed to load public surveys', error);
   }
 
-  const publishedEventById = Object.fromEntries(events.filter((ev) => ev.published).map((ev) => [ev.id, ev]));
+  const eventById = Object.fromEntries(events.map((ev) => [ev.id, ev]));
   const visible = surveys
-    .filter((sv) => sv.linkedEventId && publishedEventById[sv.linkedEventId])
+    .filter((sv) => sv.published)
     .sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
 
   return (
@@ -28,15 +28,25 @@ export default async function SurveysListPage() {
           <p className="text-gray-400 text-sm py-12 text-center">현재 참여 가능한 만족도 설문이 없습니다.</p>
         ) : (
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {visible.map((sv) => (
-              <a key={sv.id} href={`/survey/${sv.id}`} className="card block hover:shadow-md transition-shadow space-y-2">
-                <span className="text-xs rounded-full bg-brand-50 text-brand-700 px-2 py-0.5 inline-block">
-                  {publishedEventById[sv.linkedEventId].title}
-                </span>
-                <h3 className="font-bold leading-snug line-clamp-2">{sv.title}</h3>
-                {sv.intro && <p className="text-xs text-gray-500 line-clamp-2 whitespace-pre-wrap">{sv.intro}</p>}
-              </a>
-            ))}
+            {visible.map((sv) => {
+              const linkedEvent = sv.linkedEventId ? eventById[sv.linkedEventId] : null;
+              return (
+                <a key={sv.id} href={`/survey/${sv.id}`} className="card block hover:shadow-md transition-shadow space-y-2">
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    {linkedEvent && (
+                      <span className="text-xs rounded-full bg-brand-50 text-brand-700 px-2 py-0.5 inline-block">
+                        {linkedEvent.title}
+                      </span>
+                    )}
+                    {sv.round && (
+                      <span className="text-xs rounded-full bg-gray-100 text-gray-600 px-2 py-0.5 inline-block">{sv.round}</span>
+                    )}
+                  </div>
+                  <h3 className="font-bold leading-snug line-clamp-2">{sv.title}</h3>
+                  {sv.intro && <p className="text-xs text-gray-500 line-clamp-2 whitespace-pre-wrap">{sv.intro}</p>}
+                </a>
+              );
+            })}
           </div>
         )}
       </div>

@@ -24,23 +24,30 @@ export async function POST(request) {
   if (!user) return NextResponse.json({ error: '인증 필요' }, { status: 401 });
   try {
     const body = await request.json();
-    if (body.copyFromId) {
-      const source = await listConfig(SURVEYS_TAB).then((surveys) => surveys.find((item) => item.id === body.copyFromId));
-      if (!source) return NextResponse.json({ error: '복사할 설문조사를 찾을 수 없습니다.' }, { status: 404 });
-      const copied = {
-        ...JSON.parse(JSON.stringify(source)),
-        id: crypto.randomUUID(),
-        title: `${source.title} 복사본`,
-        ownerName: body.ownerName || user.displayName,
-        ownerEmail: user.email,
-        createdByEmail: user.email,
-        createdByName: user.displayName,
-        linkedEventId: null,
-        createdAt: new Date().toISOString(),
-      };
-      validateConfigImages(copied);
-      await upsertConfig(SURVEYS_TAB, copied);
-      return NextResponse.json({ survey: copied });
+    const copyIds = body.copyFromIds || (body.copyFromId ? [body.copyFromId] : []);
+    if (copyIds.length > 0) {
+      const allSurveys = await listConfig(SURVEYS_TAB);
+      const copies = [];
+      for (const sourceId of copyIds) {
+        const source = allSurveys.find((item) => item.id === sourceId);
+        if (!source) continue;
+        const copied = {
+          ...JSON.parse(JSON.stringify(source)),
+          id: crypto.randomUUID(),
+          title: `${source.title} 복사본`,
+          ownerName: body.ownerName || user.displayName,
+          ownerEmail: user.email,
+          createdByEmail: user.email,
+          createdByName: user.displayName,
+          linkedEventId: null,
+          createdAt: new Date().toISOString(),
+        };
+        validateConfigImages(copied);
+        await upsertConfig(SURVEYS_TAB, copied);
+        copies.push(copied);
+      }
+      if (copies.length === 0) return NextResponse.json({ error: '복사할 설문조사를 찾을 수 없습니다.' }, { status: 404 });
+      return NextResponse.json({ survey: copies[0], surveys: copies });
     }
     const survey = {
       id: crypto.randomUUID(),
@@ -64,6 +71,8 @@ export async function POST(request) {
         required: q.required !== false,
       })),
       linkedEventId: body.linkedEventId || null,
+      round: body.round || '',
+      published: body.published !== undefined ? !!body.published : false,
       createdAt: new Date().toISOString(),
     };
     validateConfigImages(survey);

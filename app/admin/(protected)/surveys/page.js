@@ -12,8 +12,12 @@ export default function SurveysPage() {
   const [title, setTitle] = useState('');
   const [ownerName, setOwnerName] = useState('');
   const [intro, setIntro] = useState('');
+  const [round, setRound] = useState('');
+  const [published, setPublished] = useState(false);
   const [questions, setQuestions] = useState([]);
+  const [selectedIds, setSelectedIds] = useState([]);
   const [saving, setSaving] = useState(false);
+  const [copying, setCopying] = useState(false);
   const [error, setError] = useState('');
 
   async function load() {
@@ -54,6 +58,8 @@ export default function SurveysPage() {
         title,
         ownerName,
         intro,
+        round,
+        published,
         questions: questions.map((q) => ({ ...q, options: (q.options || []).map((o) => o.trim()).filter(Boolean) })),
       }),
     });
@@ -67,6 +73,8 @@ export default function SurveysPage() {
     setTitle('');
     setOwnerName(currentUser?.displayName || '');
     setIntro('');
+    setRound('');
+    setPublished(false);
     setQuestions([]);
     load();
   }
@@ -88,6 +96,29 @@ export default function SurveysPage() {
     load();
   }
 
+  function toggleSelected(id) {
+    setSelectedIds((prev) => (prev.includes(id) ? prev.filter((sid) => sid !== id) : [...prev, id]));
+  }
+
+  async function copySelected() {
+    if (selectedIds.length === 0) return;
+    setCopying(true);
+    setError('');
+    const res = await fetch('/api/admin/surveys', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ copyFromIds: selectedIds, ownerName: currentUser?.displayName || ownerName }),
+    });
+    const data = await res.json();
+    setCopying(false);
+    if (!res.ok) {
+      setError(data.error || '설문조사를 복사하지 못했습니다.');
+      return;
+    }
+    setSelectedIds([]);
+    load();
+  }
+
   const mySurveys = surveys.filter((sv) => sv.ownerEmail && currentUser?.email && sv.ownerEmail === currentUser.email);
   const otherSurveys = surveys.filter((sv) => !sv.ownerEmail || !currentUser?.email || sv.ownerEmail !== currentUser.email);
 
@@ -96,12 +127,25 @@ export default function SurveysPage() {
     return (
       <div className="space-y-3">
         {items.map((sv) => (
-          <div key={sv.id} className="card flex items-center justify-between gap-4 hover:shadow-md transition-shadow">
+          <div key={sv.id} className="card flex items-center gap-3 hover:shadow-md transition-shadow">
+            <input
+              type="checkbox"
+              checked={selectedIds.includes(sv.id)}
+              onChange={() => toggleSelected(sv.id)}
+              className="w-4 h-4 flex-shrink-0"
+              aria-label="선택"
+            />
             <Link href={`/admin/surveys/${sv.id}`} className="min-w-0 flex-1 block">
               <div className="flex flex-wrap items-center gap-2">
                 <p className="font-semibold truncate">{sv.title}</p>
+                {sv.round && (
+                  <span className="text-xs rounded-full bg-gray-100 text-gray-600 px-2 py-1">{sv.round}</span>
+                )}
                 <span className="text-xs rounded-full bg-brand-50 text-brand-700 px-2 py-1">
                   담당 {sv.ownerName || sv.createdByName || '미지정'}
+                </span>
+                <span className={`text-xs rounded-full px-2 py-1 ${sv.published ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                  {sv.published ? '공개' : '비공개'}
                 </span>
               </div>
               <p className="text-xs text-gray-400 mt-1">질문 {sv.questions.length}개 · {new Date(sv.createdAt).toLocaleDateString('ko-KR')}</p>
@@ -123,9 +167,16 @@ export default function SurveysPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-bold">만족도 설문조사</h1>
-        <button className="btn-primary" onClick={() => setShowForm((v) => !v)}>
-          {showForm ? '닫기' : '+ 새 설문 만들기'}
-        </button>
+        <div className="flex items-center gap-2">
+          {selectedIds.length > 0 && (
+            <button className="btn-secondary" onClick={copySelected} disabled={copying}>
+              {copying ? '복사 중...' : `선택한 ${selectedIds.length}개 복사`}
+            </button>
+          )}
+          <button className="btn-primary" onClick={() => setShowForm((v) => !v)}>
+            {showForm ? '닫기' : '+ 새 설문 만들기'}
+          </button>
+        </div>
       </div>
 
       {showForm && (
@@ -138,21 +189,32 @@ export default function SurveysPage() {
           </div>
           <input className="input-base" value={title} onChange={(e) => setTitle(e.target.value)} required />
 
-          <div>
-            <label className="block text-sm font-semibold mb-1">담당자 이름</label>
-            <input
-              className="input-base max-w-sm"
-              value={ownerName}
-              onChange={(e) => setOwnerName(e.target.value)}
-              placeholder="예: 홍길동"
-              required
-            />
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <label className="block text-sm font-semibold mb-1">담당자 이름</label>
+              <input
+                className="input-base"
+                value={ownerName}
+                onChange={(e) => setOwnerName(e.target.value)}
+                placeholder="예: 홍길동"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold mb-1">회차 (선택, 예: 1차)</label>
+              <input className="input-base" value={round} onChange={(e) => setRound(e.target.value)} placeholder="한 행사에 여러 설문을 연결할 때 구분용" />
+            </div>
           </div>
 
           <div>
             <label className="block text-sm font-semibold mb-1">설문 소개</label>
             <textarea className="input-base min-h-28" rows={5} value={intro} onChange={(e) => setIntro(e.target.value)} />
           </div>
+
+          <label className="flex items-center gap-2 text-sm font-semibold">
+            <input type="checkbox" checked={published} onChange={(e) => setPublished(e.target.checked)} />
+            만족도설문조사 목록 페이지에 공개
+          </label>
 
           <div>
             <label className="block text-sm font-semibold mb-2">설문 항목</label>

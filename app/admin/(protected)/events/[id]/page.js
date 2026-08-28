@@ -17,7 +17,7 @@ export default function EventDetailPage() {
   const [imageUrl, setImageUrl] = useState('');
   const [sections, setSections] = useState([]);
   const [questions, setQuestions] = useState([]);
-  const [linkedSurveyId, setLinkedSurveyId] = useState('');
+  const [linkedSurveyIds, setLinkedSurveyIds] = useState([]);
   const [category, setCategory] = useState(CATEGORY_OPTIONS[2]);
   const [orgLabel, setOrgLabel] = useState('');
   const [eventStart, setEventStart] = useState('');
@@ -49,7 +49,7 @@ export default function EventDetailPage() {
     setImageUrl(evData.event.imageUrl || '');
     setSections(evData.event.sections || []);
     setQuestions(evData.event.questions || cloneDefaultApplyTemplate().questions);
-    setLinkedSurveyId(evData.event.linkedSurveyId || '');
+    setLinkedSurveyIds(evData.event.linkedSurveyIds || (evData.event.linkedSurveyId ? [evData.event.linkedSurveyId] : []));
     setCategory(evData.event.category || CATEGORY_OPTIONS[2]);
     setOrgLabel(evData.event.orgLabel || '');
     setEventStart(evData.event.eventStart || '');
@@ -67,6 +67,10 @@ export default function EventDetailPage() {
   useEffect(() => {
     load();
   }, [id]);
+
+  function toggleLinkedSurvey(surveyId) {
+    setLinkedSurveyIds((prev) => (prev.includes(surveyId) ? prev.filter((id) => id !== surveyId) : [...prev, surveyId]));
+  }
 
   function updateSection(i, field, value) {
     setSections((prev) => prev.map((s, idx) => (idx === i ? { ...s, [field]: value } : s)));
@@ -98,7 +102,7 @@ export default function EventDetailPage() {
         imageUrl,
         sections,
         questions: questions.map((q) => ({ ...q, options: (q.options || []).map((o) => o.trim()).filter(Boolean) })),
-        linkedSurveyId: linkedSurveyId || null,
+        linkedSurveyIds,
         category,
         orgLabel,
         eventStart,
@@ -123,11 +127,15 @@ export default function EventDetailPage() {
 
   if (!event) return <p className="text-gray-400">불러오는 중...</p>;
 
-  const linkedSurvey = surveys.find((s) => s.id === linkedSurveyId);
   const qrSrc = publicUrl ? `/api/qrcode?url=${encodeURIComponent(publicUrl)}` : '';
-  const surveyUrl =
-    typeof window !== 'undefined' && linkedSurveyId ? `${window.location.origin}/survey/${linkedSurveyId}` : '';
-  const surveyQrSrc = surveyUrl ? `/api/qrcode?url=${encodeURIComponent(surveyUrl)}` : '';
+  const linkedSurveys = linkedSurveyIds
+    .map((sid) => surveys.find((s) => s.id === sid))
+    .filter(Boolean)
+    .map((s) => ({
+      ...s,
+      url: typeof window !== 'undefined' ? `${window.location.origin}/survey/${s.id}` : '',
+    }))
+    .map((s) => ({ ...s, qrSrc: s.url ? `/api/qrcode?url=${encodeURIComponent(s.url)}` : '' }));
 
   return (
     <div className="space-y-6">
@@ -278,21 +286,23 @@ export default function EventDetailPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-semibold mb-1">연결할 만족도 설문조사</label>
-            <select
-              className="input-base"
-              value={linkedSurveyId}
-              onChange={(e) => setLinkedSurveyId(e.target.value)}
-            >
-              <option value="">연결 안 함</option>
+            <label className="block text-sm font-semibold mb-1">연결할 만족도 설문조사 (복수 선택 가능)</label>
+            <div className="rounded-lg border border-gray-200 divide-y max-h-64 overflow-y-auto">
+              {surveys.length === 0 && <p className="text-gray-400 text-sm p-3">설문조사가 없습니다.</p>}
               {surveys.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.title}
-                </option>
+                <label key={s.id} className="flex items-center gap-2 p-2.5 text-sm cursor-pointer hover:bg-gray-50">
+                  <input
+                    type="checkbox"
+                    checked={linkedSurveyIds.includes(s.id)}
+                    onChange={() => toggleLinkedSurvey(s.id)}
+                  />
+                  <span className="flex-1 truncate">{s.title}</span>
+                  {s.round && <span className="text-xs rounded-full bg-gray-100 text-gray-600 px-2 py-0.5">{s.round}</span>}
+                </label>
               ))}
-            </select>
+            </div>
             <p className="text-xs text-gray-400 mt-1">
-              신청 완료 후 참여자에게 설문 참여 버튼이 표시됩니다.
+              1차, 2차처럼 회차별로 여러 설문을 연결할 수 있습니다. 신청 완료 후 참여자에게 연결된 모든 설문 참여 버튼이 표시됩니다.
             </p>
           </div>
 
@@ -332,20 +342,23 @@ export default function EventDetailPage() {
             </a>
           </div>
 
-          {linkedSurveyId && (
-            <div className="border-t pt-5 space-y-3">
-              <p className="font-semibold text-sm">만족도 설문 QR코드</p>
-              {surveyQrSrc && <img src={surveyQrSrc} alt="만족도 설문 QR" className="w-full rounded-xl border" />}
-              <a href={surveyQrSrc} download={`${linkedSurvey?.title || title + '_만족도'}_QR.png`} className="btn-primary block">
+          {linkedSurveys.map((s) => (
+            <div key={s.id} className="border-t pt-5 space-y-3">
+              <p className="font-semibold text-sm">
+                {s.round ? `${s.round} ` : ''}만족도 설문 QR코드
+              </p>
+              <p className="text-xs text-gray-400 -mt-2 truncate">{s.title}</p>
+              {s.qrSrc && <img src={s.qrSrc} alt="만족도 설문 QR" className="w-full rounded-xl border" />}
+              <a href={s.qrSrc} download={`${s.title}_QR.png`} className="btn-primary block">
                 만족도 QR 다운로드
               </a>
-              <a href={surveyUrl} target="_blank" rel="noreferrer" className="text-xs text-brand-600 break-all block">
-                {surveyUrl}
+              <a href={s.url} target="_blank" rel="noreferrer" className="text-xs text-brand-600 break-all block">
+                {s.url}
               </a>
             </div>
-          )}
+          ))}
 
-          {!linkedSurveyId && (
+          {linkedSurveys.length === 0 && (
             <p className="text-xs text-gray-400 border-t pt-4">
               연결된 만족도 설문조사가 없습니다.
             </p>

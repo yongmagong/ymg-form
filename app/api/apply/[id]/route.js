@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { EVENTS_TAB, getConfigById, appendApplyResponse, getApplyCountsByEvent } from '@/lib/sheets';
+import { EVENTS_TAB, SURVEYS_TAB, getConfigById, listConfig, appendApplyResponse, getApplyCountsByEvent } from '@/lib/sheets';
 import { computeEventStatus } from '@/lib/eventStatus';
 
 export async function POST(request, { params }) {
@@ -31,5 +31,15 @@ export async function POST(request, { params }) {
     eventTitle: event.title,
   }, questions, answers);
 
-  return NextResponse.json({ ok: true, linkedSurveyId: event.linkedSurveyId || null });
+  const surveyIds = event.linkedSurveyIds || (event.linkedSurveyId ? [event.linkedSurveyId] : []);
+  let linkedSurveys = [];
+  if (surveyIds.length > 0) {
+    const allSurveys = await listConfig(SURVEYS_TAB);
+    linkedSurveys = surveyIds
+      .map((id) => allSurveys.find((sv) => sv.id === id))
+      .filter(Boolean)
+      .map((sv) => ({ id: sv.id, title: sv.title, round: sv.round || '' }));
+  }
+
+  return NextResponse.json({ ok: true, linkedSurveys });
 }

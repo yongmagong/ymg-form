@@ -202,10 +202,14 @@ export default function ApplyForm({ eventId, questions, closed }) {
         <p className="text-2xl">신청 완료</p>
         <p className="font-bold text-lg">신청이 완료되었습니다.</p>
         <p className="text-gray-500 text-sm">참여해 주셔서 감사합니다.</p>
-        {result.linkedSurveyId && (
-          <a href={`/survey/${result.linkedSurveyId}`} className="btn-primary inline-block mt-2">
-            만족도 설문에 참여하기
-          </a>
+        {(result.linkedSurveys || []).length > 0 && (
+          <div className="flex flex-col gap-2 mt-2">
+            {result.linkedSurveys.map((sv) => (
+              <a key={sv.id} href={`/survey/${sv.id}`} className="btn-primary inline-block">
+                {sv.round ? `${sv.round} ` : ''}만족도 설문에 참여하기
+              </a>
+            ))}
+          </div>
         )}
       </div>
     );

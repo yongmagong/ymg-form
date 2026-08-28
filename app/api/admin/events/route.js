@@ -29,45 +29,40 @@ export async function POST(request) {
     if (body.copyFromId) {
       const source = await listConfig(EVENTS_TAB).then((events) => events.find((item) => item.id === body.copyFromId));
       if (!source) return NextResponse.json({ error: '복사할 신청서를 찾을 수 없습니다.' }, { status: 404 });
-      let copiedSurveyId = null;
-      if (source.linkedSurveyId) {
-        const sourceSurvey = await listConfig(SURVEYS_TAB).then((surveys) =>
-          surveys.find((item) => item.id === source.linkedSurveyId)
-        );
-        if (sourceSurvey) {
-          const copiedSurvey = {
-            ...JSON.parse(JSON.stringify(sourceSurvey)),
-            id: crypto.randomUUID(),
-            title: `${sourceSurvey.title} 복사본`,
-            ownerName: body.ownerName || user.displayName,
-            ownerEmail: user.email,
-            createdByEmail: user.email,
-            createdByName: user.displayName,
-            linkedEventId: null,
-            createdAt: new Date().toISOString(),
-          };
-          copiedSurveyId = copiedSurvey.id;
-          await upsertConfig(SURVEYS_TAB, copiedSurvey);
-        }
+      const eventId = crypto.randomUUID();
+      const sourceSurveyIds = source.linkedSurveyIds || (source.linkedSurveyId ? [source.linkedSurveyId] : []);
+      const allSurveys = await listConfig(SURVEYS_TAB);
+      const copiedSurveyIds = [];
+      for (const surveyId of sourceSurveyIds) {
+        const sourceSurvey = allSurveys.find((item) => item.id === surveyId);
+        if (!sourceSurvey) continue;
+        const copiedSurvey = {
+          ...JSON.parse(JSON.stringify(sourceSurvey)),
+          id: crypto.randomUUID(),
+          title: `${sourceSurvey.title} 복사본`,
+          ownerName: body.ownerName || user.displayName,
+          ownerEmail: user.email,
+          createdByEmail: user.email,
+          createdByName: user.displayName,
+          linkedEventId: eventId,
+          createdAt: new Date().toISOString(),
+        };
+        copiedSurveyIds.push(copiedSurvey.id);
+        await upsertConfig(SURVEYS_TAB, copiedSurvey);
       }
       const copied = {
         ...JSON.parse(JSON.stringify(source)),
-        id: crypto.randomUUID(),
+        id: eventId,
         title: `${source.title} 복사본`,
         ownerName: body.ownerName || user.displayName,
         ownerEmail: user.email,
         createdByEmail: user.email,
         createdByName: user.displayName,
-        linkedSurveyId: copiedSurveyId,
+        linkedSurveyIds: copiedSurveyIds,
         createdAt: new Date().toISOString(),
       };
+      delete copied.linkedSurveyId;
       validateConfigImages(copied);
-      if (copiedSurveyId) {
-        const copiedSurvey = await listConfig(SURVEYS_TAB).then((surveys) =>
-          surveys.find((item) => item.id === copiedSurveyId)
-        );
-        if (copiedSurvey) await upsertConfig(SURVEYS_TAB, { ...copiedSurvey, linkedEventId: copied.id });
-      }
       await upsertConfig(EVENTS_TAB, copied);
       return NextResponse.json({ event: copied });
     }
@@ -83,6 +78,8 @@ export async function POST(request) {
       createdByEmail: user.email,
       createdByName: user.displayName,
       linkedEventId: eventId,
+      round: '',
+      published: false,
       createdAt: new Date().toISOString(),
     };
     const event = {
@@ -95,7 +92,7 @@ export async function POST(request) {
       imageUrl: body.imageUrl || '',
       sections: body.sections || applyTemplate.sections,
       questions: body.questions || applyTemplate.questions,
-      linkedSurveyId: survey.id,
+      linkedSurveyIds: [survey.id],
       category: body.category || '행사',
       orgLabel: body.orgLabel || '',
       eventStart: body.eventStart || '',

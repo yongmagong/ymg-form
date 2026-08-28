@@ -12,6 +12,8 @@ export default function SurveyDetailPage() {
   const [title, setTitle] = useState('');
   const [ownerName, setOwnerName] = useState('');
   const [intro, setIntro] = useState('');
+  const [round, setRound] = useState('');
+  const [published, setPublished] = useState(false);
   const [questions, setQuestions] = useState([]);
   const [saving, setSaving] = useState(false);
   const [publicUrl, setPublicUrl] = useState('');
@@ -27,6 +29,8 @@ export default function SurveyDetailPage() {
     setTitle(data.survey.title);
     setOwnerName(data.survey.ownerName || data.survey.createdByName || '');
     setIntro(data.survey.intro);
+    setRound(data.survey.round || '');
+    setPublished(!!data.survey.published);
     setQuestions(data.survey.questions);
   }
 
@@ -43,6 +47,8 @@ export default function SurveyDetailPage() {
         title,
         ownerName,
         intro,
+        round,
+        published,
         questions: questions.map((q) => ({ ...q, options: (q.options || []).map((o) => o.trim()).filter(Boolean) })),
       }),
     });
@@ -85,9 +91,22 @@ export default function SurveyDetailPage() {
             />
           </div>
           <div>
+            <label className="block text-sm font-semibold mb-1">회차 (선택, 예: 1차)</label>
+            <input
+              className="input-base max-w-sm"
+              value={round}
+              onChange={(e) => setRound(e.target.value)}
+              placeholder="한 행사에 여러 설문을 연결할 때 구분용"
+            />
+          </div>
+          <div>
             <label className="block text-sm font-semibold mb-1">설문 소개</label>
             <textarea className="input-base min-h-28" rows={5} value={intro} onChange={(e) => setIntro(e.target.value)} />
           </div>
+          <label className="flex items-center gap-2 text-sm font-semibold">
+            <input type="checkbox" checked={published} onChange={(e) => setPublished(e.target.checked)} />
+            만족도설문조사 목록 페이지에 공개
+          </label>
           <div>
             <label className="block text-sm font-semibold mb-2">설문 항목</label>
             <QuestionBuilder questions={questions} setQuestions={setQuestions} />

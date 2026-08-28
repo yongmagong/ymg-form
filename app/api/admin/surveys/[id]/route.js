@@ -37,6 +37,8 @@ export async function PUT(request, { params }) {
         required: q.required !== false,
       })) ?? existing.questions,
     linkedEventId: body.linkedEventId !== undefined ? body.linkedEventId : existing.linkedEventId,
+    round: body.round !== undefined ? body.round : existing.round || '',
+    published: body.published !== undefined ? !!body.published : existing.published ?? false,
   };
   validateConfigImages(updated);
   await upsertConfig(SURVEYS_TAB, updated);
