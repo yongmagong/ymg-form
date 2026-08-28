@@ -1,10 +1,19 @@
 'use client';
 
 import { useRef, useState } from 'react';
+import { upload } from '@vercel/blob/client';
 
 const EXT_KIND = { pdf: 'pdf', html: 'html', htm: 'html', md: 'md', markdown: 'md' };
-const MAX_SIZE_BYTES = 4 * 1024 * 1024;
-const SAFETY_TIMEOUT_MS = 60 * 1000;
+const MAX_SIZE_BYTES = 200 * 1024 * 1024;
+const SAFETY_TIMEOUT_MS = 10 * 60 * 1000;
+
+// Vercel Blob rejects non-ASCII (e.g. Korean) pathnames with a 400. Storage
+// key is derived from the extension only; the original filename is kept
+// separately as the display name.
+function safeStorageName(filename) {
+  const ext = filename.split('.').pop()?.toLowerCase() || 'bin';
+  return `attachment-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+}
 
 export default function AttachmentUploader({ attachments, setAttachments }) {
   const [uploading, setUploading] = useState(false);
@@ -21,7 +30,7 @@ export default function AttachmentUploader({ attachments, setAttachments }) {
       return;
     }
     if (file.size > MAX_SIZE_BYTES) {
-      setError('파일이 너무 큽니다. 4MB 이하 파일만 첨부할 수 있습니다.');
+      setError('파일이 너무 큽니다. 200MB 이하 파일만 첨부할 수 있습니다.');
       return;
     }
 
@@ -30,16 +39,17 @@ export default function AttachmentUploader({ attachments, setAttachments }) {
     setUploading(true);
     const safetyTimer = setTimeout(() => controller.abort(), SAFETY_TIMEOUT_MS);
     try {
-      const formData = new FormData();
-      formData.append('file', file);
-      const res = await fetch('/api/admin/upload', {
-        method: 'POST',
-        body: formData,
-        signal: controller.signal,
+      // No onUploadProgress here on purpose: passing it switches this SDK to a
+      // streamed fetch upload (duplex: 'half'), which some networks/proxies
+      // hang on indefinitely right near completion. Plain buffered upload is
+      // slower to show feedback but actually finishes.
+      const blob = await upload(safeStorageName(file.name), file, {
+        access: 'public',
+        handleUploadUrl: '/api/admin/upload',
+        multipart: file.size > 5 * 1024 * 1024,
+        abortSignal: controller.signal,
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || '업로드에 실패했습니다.');
-      setAttachments((prev) => [...prev, { name: file.name, url: data.url, kind }]);
+      setAttachments((prev) => [...prev, { name: file.name, url: blob.url, kind }]);
     } catch (err) {
       if (controller.signal.aborted) {
         setError('업로드를 중단했습니다.');
@@ -90,7 +100,7 @@ export default function AttachmentUploader({ attachments, setAttachments }) {
         <div className="space-y-1">
           <div className="h-1.5 w-full rounded-full bg-brand-200 animate-pulse" />
           <div className="flex items-center justify-between">
-            <p className="text-xs text-gray-400">업로드 중입니다...</p>
+            <p className="text-xs text-gray-400">업로드 중입니다. 파일 크기에 따라 시간이 걸릴 수 있어요...</p>
             <button type="button" onClick={cancelUpload} className="text-xs text-gray-400 hover:text-red-600 whitespace-nowrap">
               취소
             </button>
@@ -98,7 +108,7 @@ export default function AttachmentUploader({ attachments, setAttachments }) {
         </div>
       )}
       {error && <p className="text-xs text-red-600">{error}</p>}
-      <p className="text-xs text-gray-400">PDF, HTML, MD 파일을 첨부할 수 있습니다. (최대 4MB)</p>
+      <p className="text-xs text-gray-400">PDF, HTML, MD 파일을 첨부할 수 있습니다. (최대 200MB)</p>
     </div>
   );
 }
