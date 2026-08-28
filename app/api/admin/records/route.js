@@ -1,8 +1,8 @@
-import crypto from 'crypto';
 import { NextResponse } from 'next/server';
 import { getAuthedRequestUser } from '@/lib/auth';
 import { validateInlineImage } from '@/lib/imageData';
 import { RECORDS_TAB, listConfig, upsertConfig } from '@/lib/sheets';
+import { shortId } from '@/lib/shortId';
 
 function validateRecordImages(record) {
   validateInlineImage(record.imageUrl);
@@ -34,7 +34,7 @@ export async function POST(request) {
       if (!source) return NextResponse.json({ error: '복사할 기록을 찾을 수 없습니다.' }, { status: 404 });
       const copied = {
         ...JSON.parse(JSON.stringify(source)),
-        id: crypto.randomUUID(),
+        id: shortId(),
         title: `${source.title} 복사본`,
         ownerName: body.ownerName || user.displayName,
         ownerEmail: user.email,
@@ -48,7 +48,7 @@ export async function POST(request) {
     }
 
     const record = {
-      id: crypto.randomUUID(),
+      id: shortId(),
       title: body.title || '제목 없음',
       ownerName: body.ownerName || user.displayName,
       ownerEmail: user.email,

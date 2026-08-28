@@ -1,8 +1,8 @@
-import crypto from 'crypto';
 import { NextResponse } from 'next/server';
 import { getAuthedRequestUser } from '@/lib/auth';
 import { validateConfigImages } from '@/lib/imageData';
 import { SURVEYS_TAB, listConfig, upsertConfig } from '@/lib/sheets';
+import { shortId } from '@/lib/shortId';
 
 export async function GET(request) {
   const user = await getAuthedRequestUser(request);
@@ -33,7 +33,7 @@ export async function POST(request) {
         if (!source) continue;
         const copied = {
           ...JSON.parse(JSON.stringify(source)),
-          id: crypto.randomUUID(),
+          id: shortId(),
           title: `${source.title} 복사본`,
           ownerName: body.ownerName || user.displayName,
           ownerEmail: user.email,
@@ -50,7 +50,7 @@ export async function POST(request) {
       return NextResponse.json({ survey: copies[0], surveys: copies });
     }
     const survey = {
-      id: crypto.randomUUID(),
+      id: shortId(),
       title: body.title || '제목 없음',
       ownerName: body.ownerName || user.displayName,
       ownerEmail: user.email,

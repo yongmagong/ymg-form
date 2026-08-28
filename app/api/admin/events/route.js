@@ -1,9 +1,9 @@
-import crypto from 'crypto';
 import { NextResponse } from 'next/server';
 import { getAuthedRequestUser } from '@/lib/auth';
 import { cloneDefaultSurveyTemplate } from '@/lib/defaultSurvey';
 import { cloneDefaultApplyTemplate } from '@/lib/defaultApply';
 import { validateConfigImages } from '@/lib/imageData';
+import { shortId } from '@/lib/shortId';
 import { EVENTS_TAB, SURVEYS_TAB, listConfig, upsertConfig, getApplyCountsByEvent } from '@/lib/sheets';
 
 export async function GET(request) {
@@ -29,7 +29,7 @@ export async function POST(request) {
     if (body.copyFromId) {
       const source = await listConfig(EVENTS_TAB).then((events) => events.find((item) => item.id === body.copyFromId));
       if (!source) return NextResponse.json({ error: '복사할 신청서를 찾을 수 없습니다.' }, { status: 404 });
-      const eventId = crypto.randomUUID();
+      const eventId = shortId();
       const sourceSurveyIds = source.linkedSurveyIds || (source.linkedSurveyId ? [source.linkedSurveyId] : []);
       const allSurveys = await listConfig(SURVEYS_TAB);
       const copiedSurveyIds = [];
@@ -38,7 +38,7 @@ export async function POST(request) {
         if (!sourceSurvey) continue;
         const copiedSurvey = {
           ...JSON.parse(JSON.stringify(sourceSurvey)),
-          id: crypto.randomUUID(),
+          id: shortId(),
           title: `${sourceSurvey.title} 복사본`,
           ownerName: body.ownerName || user.displayName,
           ownerEmail: user.email,
@@ -66,12 +66,12 @@ export async function POST(request) {
       await upsertConfig(EVENTS_TAB, copied);
       return NextResponse.json({ event: copied });
     }
-    const eventId = crypto.randomUUID();
+    const eventId = shortId();
     const surveyTemplate = cloneDefaultSurveyTemplate();
     const applyTemplate = cloneDefaultApplyTemplate();
     const survey = {
       ...surveyTemplate,
-      id: crypto.randomUUID(),
+      id: shortId(),
       title: `${body.title || '제목 없음'} 만족도 조사`,
       ownerName: body.ownerName || user.displayName,
       ownerEmail: user.email,
