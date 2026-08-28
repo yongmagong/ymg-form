@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import QuestionBuilder from '@/components/QuestionBuilder';
 import { cloneDefaultApplyTemplate } from '@/lib/defaultApply';
-import { MAX_INLINE_IMAGE_CHARS } from '@/lib/imageData';
+import { uploadImageFile } from '@/lib/uploadImage';
 import { CATEGORY_OPTIONS } from '@/lib/eventOptions';
 
 export default function EventDetailPage() {
@@ -78,17 +78,13 @@ export default function EventDetailPage() {
     setSections((prev) => prev.filter((_, idx) => idx !== i));
   }
 
-  function readImageFile(file) {
+  async function readImageFile(file) {
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      if (String(reader.result || '').length > MAX_INLINE_IMAGE_CHARS) {
-        alert('이미지 파일 용량이 큽니다. 포스터는 파일 대신 공개 이미지 링크를 넣어 주세요.');
-        return;
-      }
-      setImageUrl(reader.result);
-    };
-    reader.readAsDataURL(file);
+    try {
+      setImageUrl(await uploadImageFile(file));
+    } catch (err) {
+      alert(err.message || '이미지 업로드에 실패했습니다.');
+    }
   }
 
   async function save() {

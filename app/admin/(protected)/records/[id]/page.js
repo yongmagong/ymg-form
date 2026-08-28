@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { MAX_INLINE_IMAGE_CHARS } from '@/lib/imageData';
+import { uploadImageFile } from '@/lib/uploadImage';
 import AttachmentUploader from '@/components/AttachmentUploader';
 
 export default function RecordDetailPage() {
@@ -55,17 +55,13 @@ export default function RecordDetailPage() {
     setSections((prev) => prev.filter((_, idx) => idx !== i));
   }
 
-  function readImageFile(file, callback) {
+  async function readImageFile(file, callback) {
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      if (String(reader.result || '').length > MAX_INLINE_IMAGE_CHARS) {
-        alert('이미지 파일 용량이 큽니다. 큰 이미지는 파일 대신 공개 이미지 링크를 넣어 주세요.');
-        return;
-      }
-      callback(reader.result);
-    };
-    reader.readAsDataURL(file);
+    try {
+      callback(await uploadImageFile(file));
+    } catch (err) {
+      alert(err.message || '이미지 업로드에 실패했습니다.');
+    }
   }
 
   function updateImage(i, value) {

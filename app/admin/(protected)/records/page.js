@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { MAX_INLINE_IMAGE_CHARS } from '@/lib/imageData';
+import { uploadImageFile } from '@/lib/uploadImage';
 import AttachmentUploader from '@/components/AttachmentUploader';
 
 export default function RecordsPage() {
@@ -51,17 +51,13 @@ export default function RecordsPage() {
     setSections((prev) => prev.filter((_, idx) => idx !== i));
   }
 
-  function readImageFile(file) {
+  async function readImageFile(file) {
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      if (String(reader.result || '').length > MAX_INLINE_IMAGE_CHARS) {
-        setError('이미지 파일 용량이 큽니다. 대표 이미지는 파일 대신 공개 이미지 링크를 넣어 주세요.');
-        return;
-      }
-      setImageUrl(reader.result);
-    };
-    reader.readAsDataURL(file);
+    try {
+      setImageUrl(await uploadImageFile(file));
+    } catch (err) {
+      setError(err.message || '이미지 업로드에 실패했습니다.');
+    }
   }
 
   async function createRecord(e) {
