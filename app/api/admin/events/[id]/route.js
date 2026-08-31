@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getAuthedRequestUser } from '@/lib/auth';
 import { validateConfigImages } from '@/lib/imageData';
-import { EVENTS_TAB, SURVEYS_TAB, getConfigById, upsertConfig, deleteConfig, getApplyCountsByEvent } from '@/lib/sheets';
+import { EVENTS_TAB, SURVEYS_TAB, getConfigById, upsertConfig, deleteConfig, ensureAppliedCounts } from '@/lib/sheets';
 
 function effectiveSurveyIds(event) {
   return event.linkedSurveyIds || (event.linkedSurveyId ? [event.linkedSurveyId] : []);
@@ -11,8 +11,8 @@ export async function GET(request, { params }) {
   if (!(await getAuthedRequestUser(request))) return NextResponse.json({ error: '인증 필요' }, { status: 401 });
   const event = await getConfigById(EVENTS_TAB, params.id);
   if (!event) return NextResponse.json({ error: '찾을 수 없음' }, { status: 404 });
-  const counts = await getApplyCountsByEvent();
-  return NextResponse.json({ event, appliedCount: counts[event.id] || 0 });
+  await ensureAppliedCounts([event]);
+  return NextResponse.json({ event, appliedCount: event.appliedCount || 0 });
 }
 
 export async function PUT(request, { params }) {

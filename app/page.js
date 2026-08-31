@@ -1,4 +1,4 @@
-import { EVENTS_TAB, RECORDS_TAB, listConfig, getApplyCountsByEvent } from '@/lib/sheets';
+import { EVENTS_TAB, RECORDS_TAB, listConfig, ensureAppliedCounts } from '@/lib/sheets';
 import { computeEventStatus } from '@/lib/eventStatus';
 import SiteHeader from './SiteHeader';
 import HomeCatalog from './HomeCatalog';
@@ -10,14 +10,10 @@ const RECORDS_PREVIEW_COUNT = 6;
 
 export default async function Home() {
   let events = [];
-  let appliedCounts = {};
   let records = [];
   try {
-    [events, appliedCounts, records] = await Promise.all([
-      listConfig(EVENTS_TAB),
-      getApplyCountsByEvent(),
-      listConfig(RECORDS_TAB),
-    ]);
+    [events, records] = await Promise.all([listConfig(EVENTS_TAB), listConfig(RECORDS_TAB)]);
+    await ensureAppliedCounts(events);
   } catch (error) {
     console.error('Failed to load public homepage data', error);
   }
@@ -26,8 +22,7 @@ export default async function Home() {
     .filter((ev) => ev.published)
     .map((ev) => ({
       ...ev,
-      appliedCount: appliedCounts[ev.id] || 0,
-      status: computeEventStatus(ev, appliedCounts[ev.id] || 0).label,
+      status: computeEventStatus(ev).label,
     }))
     .sort((a, b) => {
       const aClosed = a.status === '모집종료';

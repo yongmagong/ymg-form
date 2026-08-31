@@ -4,13 +4,15 @@ import { cloneDefaultSurveyTemplate } from '@/lib/defaultSurvey';
 import { cloneDefaultApplyTemplate } from '@/lib/defaultApply';
 import { validateConfigImages } from '@/lib/imageData';
 import { shortId } from '@/lib/shortId';
-import { EVENTS_TAB, SURVEYS_TAB, listConfig, upsertConfig, getApplyCountsByEvent } from '@/lib/sheets';
+import { EVENTS_TAB, SURVEYS_TAB, listConfig, upsertConfig, ensureAppliedCounts } from '@/lib/sheets';
 
 export async function GET(request) {
   const user = await getAuthedRequestUser(request);
   if (!user) return NextResponse.json({ error: '인증 필요' }, { status: 401 });
   try {
-    const [events, appliedCounts] = await Promise.all([listConfig(EVENTS_TAB), getApplyCountsByEvent()]);
+    const events = await listConfig(EVENTS_TAB);
+    await ensureAppliedCounts(events);
+    const appliedCounts = Object.fromEntries(events.map((ev) => [ev.id, ev.appliedCount || 0]));
     return NextResponse.json({ events, appliedCounts, currentUser: user });
   } catch (error) {
     console.error('Failed to load events', error);
@@ -59,6 +61,7 @@ export async function POST(request) {
         createdByEmail: user.email,
         createdByName: user.displayName,
         linkedSurveyIds: copiedSurveyIds,
+        appliedCount: 0,
         createdAt: new Date().toISOString(),
       };
       delete copied.linkedSurveyId;
@@ -94,6 +97,7 @@ export async function POST(request) {
       sections: body.sections || applyTemplate.sections,
       questions: body.questions || applyTemplate.questions,
       linkedSurveyIds: [survey.id],
+      appliedCount: 0,
       category: body.category || '행사',
       orgLabel: body.orgLabel || '',
       eventStart: body.eventStart || '',

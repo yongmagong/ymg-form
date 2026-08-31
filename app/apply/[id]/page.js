@@ -1,4 +1,4 @@
-import { EVENTS_TAB, getConfigById, getApplyCountsByEvent } from '@/lib/sheets';
+import { EVENTS_TAB, getConfigById, ensureAppliedCounts } from '@/lib/sheets';
 import { computeEventStatus, formatDateRange, formatRecruitPeriod } from '@/lib/eventStatus';
 import SiteHeader from '../../SiteHeader';
 import ApplyGate from './ApplyGate';
@@ -19,14 +19,13 @@ export default async function ApplyPage({ params }) {
     );
   }
 
-  let appliedCount = 0;
   try {
-    const counts = await getApplyCountsByEvent();
-    appliedCount = counts[event.id] || 0;
+    await ensureAppliedCounts([event]);
   } catch (error) {
     console.error('Failed to load applied counts', error);
   }
-  const status = computeEventStatus(event, appliedCount);
+  const appliedCount = event.appliedCount || 0;
+  const status = computeEventStatus(event);
   const mapUrl = event.locationAddress
     ? `https://map.kakao.com/link/search/${encodeURIComponent(event.locationAddress)}`
     : null;
