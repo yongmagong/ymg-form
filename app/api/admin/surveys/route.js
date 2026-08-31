@@ -3,6 +3,7 @@ import { getAuthedRequestUser } from '@/lib/auth';
 import { validateConfigImages } from '@/lib/imageData';
 import { SURVEYS_TAB, listConfig, upsertConfig } from '@/lib/sheets';
 import { shortId } from '@/lib/shortId';
+import { linkSurveyToEvent } from '@/lib/surveyEventLink';
 
 export async function GET(request) {
   const user = await getAuthedRequestUser(request);
@@ -77,6 +78,7 @@ export async function POST(request) {
     };
     validateConfigImages(survey);
     await upsertConfig(SURVEYS_TAB, survey);
+    if (survey.linkedEventId) await linkSurveyToEvent(survey.linkedEventId, survey.id);
     return NextResponse.json({ survey });
   } catch (error) {
     console.error('Failed to create survey', error);

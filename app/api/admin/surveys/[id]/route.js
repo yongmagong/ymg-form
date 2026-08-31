@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getAuthedRequestUser } from '@/lib/auth';
 import { validateConfigImages } from '@/lib/imageData';
 import { SURVEYS_TAB, getConfigById, upsertConfig, deleteConfig } from '@/lib/sheets';
+import { linkSurveyToEvent, unlinkSurveyFromEvent } from '@/lib/surveyEventLink';
 
 export async function GET(request, { params }) {
   if (!(await getAuthedRequestUser(request))) return NextResponse.json({ error: '인증 필요' }, { status: 401 });
@@ -42,6 +43,14 @@ export async function PUT(request, { params }) {
   };
   validateConfigImages(updated);
   await upsertConfig(SURVEYS_TAB, updated);
+
+  const oldEventId = existing.linkedEventId || null;
+  const newEventId = updated.linkedEventId || null;
+  if (oldEventId !== newEventId) {
+    if (oldEventId) await unlinkSurveyFromEvent(oldEventId, updated.id);
+    if (newEventId) await linkSurveyToEvent(newEventId, updated.id);
+  }
+
   return NextResponse.json({ survey: updated });
 }
 

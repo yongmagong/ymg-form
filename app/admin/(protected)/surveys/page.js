@@ -14,6 +14,8 @@ export default function SurveysPage() {
   const [intro, setIntro] = useState('');
   const [round, setRound] = useState('');
   const [published, setPublished] = useState(false);
+  const [linkedEventId, setLinkedEventId] = useState('');
+  const [events, setEvents] = useState([]);
   const [questions, setQuestions] = useState([]);
   const [selectedIds, setSelectedIds] = useState([]);
   const [saving, setSaving] = useState(false);
@@ -23,12 +25,14 @@ export default function SurveysPage() {
   async function load() {
     setError('');
     try {
-      const res = await fetch('/api/admin/surveys');
+      const [res, evRes] = await Promise.all([fetch('/api/admin/surveys'), fetch('/api/admin/events')]);
       const data = await res.json();
+      const evData = await evRes.json();
       if (!res.ok) throw new Error(data.error || '설문 목록을 불러오지 못했습니다.');
       setSurveys(data.surveys || []);
       setCurrentUser(data.currentUser || null);
       setOwnerName((prev) => prev || data.currentUser?.displayName || '');
+      setEvents(evData.events || []);
     } catch (err) {
       setSurveys([]);
       setError(err.message);
@@ -60,6 +64,7 @@ export default function SurveysPage() {
         intro,
         round,
         published,
+        linkedEventId: linkedEventId || null,
         questions: questions.map((q) => ({ ...q, options: (q.options || []).map((o) => o.trim()).filter(Boolean) })),
       }),
     });
@@ -75,6 +80,7 @@ export default function SurveysPage() {
     setIntro('');
     setRound('');
     setPublished(false);
+    setLinkedEventId('');
     setQuestions([]);
     load();
   }
@@ -122,6 +128,8 @@ export default function SurveysPage() {
   const mySurveys = surveys.filter((sv) => sv.ownerEmail && currentUser?.email && sv.ownerEmail === currentUser.email);
   const otherSurveys = surveys.filter((sv) => !sv.ownerEmail || !currentUser?.email || sv.ownerEmail !== currentUser.email);
 
+  const eventById = Object.fromEntries(events.map((ev) => [ev.id, ev]));
+
   function SurveyList({ items, showCopy }) {
     if (items.length === 0) return <p className="text-gray-400 text-sm">목록이 없습니다.</p>;
     return (
@@ -138,6 +146,11 @@ export default function SurveysPage() {
             <Link href={`/admin/surveys/${sv.id}`} className="min-w-0 flex-1 block">
               <div className="flex flex-wrap items-center gap-2">
                 <p className="font-semibold truncate">{sv.title}</p>
+                {sv.linkedEventId && eventById[sv.linkedEventId] && (
+                  <span className="text-xs rounded-full bg-brand-50 text-brand-700 px-2 py-1 truncate max-w-[10rem]">
+                    {eventById[sv.linkedEventId].title}
+                  </span>
+                )}
                 {sv.round && (
                   <span className="text-xs rounded-full bg-gray-100 text-gray-600 px-2 py-1">{sv.round}</span>
                 )}
@@ -204,6 +217,21 @@ export default function SurveysPage() {
               <label className="block text-sm font-semibold mb-1">회차 (선택, 예: 1차)</label>
               <input className="input-base" value={round} onChange={(e) => setRound(e.target.value)} placeholder="한 행사에 여러 설문을 연결할 때 구분용" />
             </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold mb-1">연결할 행사 (선택)</label>
+            <select className="input-base" value={linkedEventId} onChange={(e) => setLinkedEventId(e.target.value)}>
+              <option value="">연결 안 함</option>
+              {events.map((ev) => (
+                <option key={ev.id} value={ev.id}>
+                  {ev.title}
+                </option>
+              ))}
+            </select>
+            <p className="text-xs text-gray-400 mt-1">
+              어느 행사의 만족도 설문인지 지정합니다. 행사 편집 화면에서도 연결할 수 있습니다.
+            </p>
           </div>
 
           <div>

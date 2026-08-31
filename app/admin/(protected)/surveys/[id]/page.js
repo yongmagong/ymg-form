@@ -14,6 +14,8 @@ export default function SurveyDetailPage() {
   const [intro, setIntro] = useState('');
   const [round, setRound] = useState('');
   const [published, setPublished] = useState(false);
+  const [linkedEventId, setLinkedEventId] = useState('');
+  const [events, setEvents] = useState([]);
   const [questions, setQuestions] = useState([]);
   const [saving, setSaving] = useState(false);
   const [publicUrl, setPublicUrl] = useState('');
@@ -23,15 +25,18 @@ export default function SurveyDetailPage() {
   }, [id]);
 
   async function load() {
-    const res = await fetch(`/api/admin/surveys/${id}`);
+    const [res, evRes] = await Promise.all([fetch(`/api/admin/surveys/${id}`), fetch('/api/admin/events')]);
     const data = await res.json();
+    const evData = await evRes.json();
     setSurvey(data.survey);
     setTitle(data.survey.title);
     setOwnerName(data.survey.ownerName || data.survey.createdByName || '');
     setIntro(data.survey.intro);
     setRound(data.survey.round || '');
     setPublished(!!data.survey.published);
+    setLinkedEventId(data.survey.linkedEventId || '');
     setQuestions(data.survey.questions);
+    setEvents(evData.events || []);
   }
 
   useEffect(() => {
@@ -49,6 +54,7 @@ export default function SurveyDetailPage() {
         intro,
         round,
         published,
+        linkedEventId: linkedEventId || null,
         questions: questions.map((q) => ({ ...q, options: (q.options || []).map((o) => o.trim()).filter(Boolean) })),
       }),
     });
@@ -98,6 +104,17 @@ export default function SurveyDetailPage() {
               onChange={(e) => setRound(e.target.value)}
               placeholder="한 행사에 여러 설문을 연결할 때 구분용"
             />
+          </div>
+          <div>
+            <label className="block text-sm font-semibold mb-1">연결할 행사 (선택)</label>
+            <select className="input-base" value={linkedEventId} onChange={(e) => setLinkedEventId(e.target.value)}>
+              <option value="">연결 안 함</option>
+              {events.map((ev) => (
+                <option key={ev.id} value={ev.id}>
+                  {ev.title}
+                </option>
+              ))}
+            </select>
           </div>
           <div>
             <label className="block text-sm font-semibold mb-1">설문 소개</label>
