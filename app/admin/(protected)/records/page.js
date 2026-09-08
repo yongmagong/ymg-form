@@ -110,6 +110,19 @@ export default function RecordsPage() {
     load();
   }
 
+  async function togglePublished(record) {
+    setRecords((prev) => prev.map((r) => (r.id === record.id ? { ...r, published: !record.published } : r)));
+    const res = await fetch(`/api/admin/records/${record.id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ published: !record.published }),
+    });
+    if (!res.ok) {
+      setError('공개 여부를 변경하지 못했습니다.');
+      load();
+    }
+  }
+
   const myRecords = records.filter((r) => r.ownerEmail && currentUser?.email && r.ownerEmail === currentUser.email);
   const otherRecords = records.filter((r) => !r.ownerEmail || !currentUser?.email || r.ownerEmail !== currentUser.email);
 
@@ -122,12 +135,16 @@ export default function RecordsPage() {
             <Link href={`/admin/records/${r.id}`} className="min-w-0 flex-1 block">
               <div className="flex flex-wrap items-center gap-2">
                 <p className="font-semibold truncate">{r.title}</p>
-                <span className={`text-xs rounded-full px-2 py-1 ${r.published ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
-                  {r.published ? '공개' : '비공개'}
-                </span>
               </div>
               <p className="text-xs text-gray-400 mt-1">{new Date(r.createdAt).toLocaleDateString('ko-KR')}</p>
             </Link>
+            <label
+              className={`flex items-center gap-1.5 text-xs rounded-full px-2 py-1 cursor-pointer whitespace-nowrap ${r.published ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-500'}`}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <input type="checkbox" checked={!!r.published} onChange={() => togglePublished(r)} className="w-3.5 h-3.5" />
+              {r.published ? '공개' : '비공개'}
+            </label>
             {showCopy ? (
               <button type="button" onClick={() => copyRecord(r.id)} className="btn-secondary text-xs whitespace-nowrap">
                 내 것으로 복사
