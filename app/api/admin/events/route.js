@@ -108,6 +108,7 @@ export async function POST(request) {
       recruitStart: body.recruitStart || '',
       recruitEnd: body.recruitEnd || '',
       published: body.published !== undefined ? !!body.published : true,
+      showAppliedCount: body.showAppliedCount !== undefined ? !!body.showAppliedCount : true,
       createdAt: new Date().toISOString(),
     };
     validateConfigImages(event);

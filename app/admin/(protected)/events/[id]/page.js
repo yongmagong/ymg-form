@@ -29,6 +29,7 @@ export default function EventDetailPage() {
   const [recruitStart, setRecruitStart] = useState('');
   const [recruitEnd, setRecruitEnd] = useState('');
   const [published, setPublished] = useState(false);
+  const [showAppliedCount, setShowAppliedCount] = useState(true);
   const [appliedCount, setAppliedCount] = useState(0);
   const [saving, setSaving] = useState(false);
   const [publicUrl, setPublicUrl] = useState('');
@@ -62,6 +63,7 @@ export default function EventDetailPage() {
     setRecruitStart(evData.event.recruitStart || '');
     setRecruitEnd(evData.event.recruitEnd || '');
     setPublished(!!evData.event.published);
+    setShowAppliedCount(evData.event.showAppliedCount !== false);
     setAppliedCount(evData.appliedCount || 0);
     setSurveys(svData.surveys || []);
   }
@@ -116,6 +118,7 @@ export default function EventDetailPage() {
         recruitStart,
         recruitEnd,
         published,
+        showAppliedCount,
       }),
     });
     setSaving(false);
@@ -173,7 +176,7 @@ export default function EventDetailPage() {
           </div>
 
           <div className="rounded-lg border border-gray-100 bg-gray-50 p-3 text-sm">
-            현재 신청 <strong>{appliedCount}명</strong>
+            현재 신청자 <strong>{appliedCount}명</strong>
             {capacity ? ` / 정원 ${capacity}명` : ' (정원 제한 없음)'}
           </div>
 
@@ -246,6 +249,11 @@ export default function EventDetailPage() {
           <label className="flex items-center gap-2 text-sm font-semibold">
             <input type="checkbox" checked={published} onChange={(e) => setPublished(e.target.checked)} />
             홈페이지에 공개
+          </label>
+
+          <label className="flex items-center gap-2 text-sm font-semibold">
+            <input type="checkbox" checked={showAppliedCount} onChange={(e) => setShowAppliedCount(e.target.checked)} />
+            현재 신청자 현황 공개 (해제하면 정원만 표시되고 신청 인원수는 숨겨집니다)
           </label>
 
           <div>

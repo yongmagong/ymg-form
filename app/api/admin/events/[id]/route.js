@@ -43,6 +43,7 @@ export async function PUT(request, { params }) {
     recruitStart: body.recruitStart ?? existing.recruitStart ?? '',
     recruitEnd: body.recruitEnd ?? existing.recruitEnd ?? '',
     published: body.published !== undefined ? !!body.published : existing.published ?? false,
+    showAppliedCount: body.showAppliedCount !== undefined ? !!body.showAppliedCount : existing.showAppliedCount ?? true,
   };
   delete updated.linkedSurveyId;
   validateConfigImages(updated);

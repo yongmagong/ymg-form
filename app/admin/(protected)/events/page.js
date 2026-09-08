@@ -25,6 +25,7 @@ export default function EventsPage() {
   const [recruitStart, setRecruitStart] = useState('');
   const [recruitEnd, setRecruitEnd] = useState('');
   const [published, setPublished] = useState(true);
+  const [showAppliedCount, setShowAppliedCount] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
@@ -92,6 +93,7 @@ export default function EventsPage() {
         recruitStart,
         recruitEnd,
         published,
+        showAppliedCount,
       }),
     });
     const data = await res.json();
@@ -116,6 +118,7 @@ export default function EventsPage() {
     setRecruitStart('');
     setRecruitEnd('');
     setPublished(true);
+    setShowAppliedCount(true);
     load();
   }
 
@@ -289,6 +292,11 @@ export default function EventsPage() {
           <label className="flex items-center gap-2 text-sm font-semibold">
             <input type="checkbox" checked={published} onChange={(e) => setPublished(e.target.checked)} />
             홈페이지에 공개
+          </label>
+
+          <label className="flex items-center gap-2 text-sm font-semibold">
+            <input type="checkbox" checked={showAppliedCount} onChange={(e) => setShowAppliedCount(e.target.checked)} />
+            현재 신청자 현황 공개 (해제하면 정원만 표시되고 신청 인원수는 숨겨집니다)
           </label>
 
           <div>

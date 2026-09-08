@@ -9,9 +9,14 @@ const TABS = ['전체', ...CATEGORY_OPTIONS];
 function EventCard({ event }) {
   const closed = event.status === '모집종료';
   const tag = event.orgLabel || event.category || '행사';
-  const capacityText = event.capacity
-    ? `${event.appliedCount}/${event.capacity}`
-    : '모집 인원수 제한 없음';
+  const capacityText =
+    event.showAppliedCount === false
+      ? event.capacity
+        ? `정원 ${event.capacity}명`
+        : null
+      : event.capacity
+      ? `${event.appliedCount}/${event.capacity}`
+      : '모집 인원수 제한 없음';
 
   return (
     <a
@@ -45,7 +50,7 @@ function EventCard({ event }) {
         </div>
 
         <div className="text-xs text-gray-500 space-y-1 pt-1">
-          <p>👥 모임인원 : {capacityText}</p>
+          {capacityText && <p>👥 모임인원 : {capacityText}</p>}
           {event.eventStart && <p>📅 모임일시 : {formatDateRange(event.eventStart, event.eventEnd)}</p>}
           {event.locationName && <p>📍 모임장소 : {event.locationName}</p>}
         </div>

@@ -76,10 +76,18 @@ export default async function ApplyPage({ params }) {
                 )}
               </p>
             )}
-            <p>
-              <span className="font-semibold">모집정보</span> · 신청 {appliedCount}명
-              {event.capacity ? ` / 정원 ${event.capacity}명` : ' (정원 제한 없음)'}
-            </p>
+            {event.showAppliedCount !== false ? (
+              <p>
+                <span className="font-semibold">모집정보</span> · 현재 신청자 {appliedCount}명
+                {event.capacity ? ` / 정원 ${event.capacity}명` : ' (정원 제한 없음)'}
+              </p>
+            ) : (
+              event.capacity > 0 && (
+                <p>
+                  <span className="font-semibold">모집정보</span> · 정원 {event.capacity}명
+                </p>
+              )
+            )}
             {(event.recruitStart || event.recruitEnd) && (
               <p>
                 <span className="font-semibold">모집기간</span> · {formatRecruitPeriod(event.recruitStart, event.recruitEnd)}
