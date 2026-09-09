@@ -25,7 +25,7 @@ function EventCard({ event }) {
     >
       <div className="relative aspect-[4/3] bg-gray-100">
         {event.imageUrl ? (
-          <img src={event.imageUrl} alt={`${event.title} 포스터`} className="w-full h-full object-cover" />
+          <img src={event.imageUrl} alt={`${event.title} 포스터`} className="w-full h-full object-cover object-top" />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-gray-300 text-sm">이미지 없음</div>
         )}

@@ -2,6 +2,7 @@ import { EVENTS_TAB, getConfigById, ensureAppliedCounts } from '@/lib/sheets';
 import { computeEventStatus, formatDateRange, formatRecruitPeriod } from '@/lib/eventStatus';
 import SiteHeader from '../../SiteHeader';
 import ApplyGate from './ApplyGate';
+import ZoomableImage from '@/components/ZoomableImage';
 
 export const dynamic = 'force-dynamic';
 
@@ -37,7 +38,7 @@ export default async function ApplyPage({ params }) {
         <div className="card">
           {event.imageUrl && (
             <div className="mb-5 overflow-hidden rounded-lg border border-gray-200 bg-gray-50">
-              <img src={event.imageUrl} alt={`${event.title} 포스터`} className="w-full object-contain" />
+              <ZoomableImage src={event.imageUrl} alt={`${event.title} 포스터`} className="w-full object-contain" />
             </div>
           )}
 
