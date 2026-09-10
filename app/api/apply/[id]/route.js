@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { EVENTS_TAB, SURVEYS_TAB, getConfigById, listConfig, appendApplyResponse, ensureAppliedCounts } from '@/lib/sheets';
 import { computeEventStatus } from '@/lib/eventStatus';
+import { answerableQuestions } from '@/lib/answerableQuestions';
 
 export async function POST(request, { params }) {
   const event = await getConfigById(EVENTS_TAB, params.id);
@@ -15,7 +16,7 @@ export async function POST(request, { params }) {
   const body = await request.json();
   const answers = body.answers || {};
   const questions = event.questions || [];
-  const missing = questions.find((q) => {
+  const missing = answerableQuestions(questions).find((q) => {
     if (!q.required) return false;
     const answer = answers[q.id];
     if (Array.isArray(answer)) return answer.length === 0;

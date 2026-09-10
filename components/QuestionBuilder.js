@@ -13,6 +13,7 @@ const TYPE_LABELS = {
   scale5: '5점 척도',
   date: '날짜',
   time: '시간',
+  section: '설명(구분) 삽입',
 };
 
 const OPTION_TYPES = ['single', 'multi', 'dropdown'];
@@ -29,7 +30,8 @@ function newQuestion(type = 'single') {
     defaultChecked: false,
     lowLabel: '매우 불만족',
     highLabel: '아주 만족',
-    required: true,
+    maxSelect: 0,
+    required: type !== 'section',
   };
 }
 
@@ -121,7 +123,13 @@ export default function QuestionBuilder({ questions, setQuestions }) {
             </span>
             <input
               className="input-base"
-              placeholder={q.type === 'checkbox' ? '체크박스 제목을 입력하세요' : '질문 내용을 입력하세요'}
+              placeholder={
+                q.type === 'checkbox'
+                  ? '체크박스 제목을 입력하세요'
+                  : q.type === 'section'
+                  ? '구분 제목을 입력하세요 (예: 1부. 자리 배치 테스트)'
+                  : '질문 내용을 입력하세요'
+              }
               value={q.text}
               onChange={(e) => update(i, { text: e.target.value })}
             />
@@ -133,6 +141,7 @@ export default function QuestionBuilder({ questions, setQuestions }) {
                 update(i, {
                   type,
                   options: OPTION_TYPES.includes(type) ? q.options?.length ? q.options : ['옵션 1', '옵션 2'] : [],
+                  required: type === 'section' ? false : q.required,
                 });
               }}
             >
@@ -143,6 +152,20 @@ export default function QuestionBuilder({ questions, setQuestions }) {
               ))}
             </select>
           </div>
+
+          {q.type === 'section' && (
+            <div className="rounded-lg border border-brand-100 bg-brand-50 p-3">
+              <label className="block text-xs font-semibold text-brand-700 mb-1">설명 내용</label>
+              <textarea
+                className="input-base bg-white min-h-24"
+                rows={4}
+                placeholder="이 구분 아래 문항들에 대한 안내 문구를 입력하세요."
+                value={q.description ?? ''}
+                onChange={(e) => update(i, { description: e.target.value })}
+              />
+              <p className="text-xs text-gray-400 mt-1">응답 화면에서 바로 다음 문항 위에 제목과 함께 표시됩니다.</p>
+            </div>
+          )}
 
           {q.type === 'checkbox' && (
             <div className="rounded-lg border border-brand-100 bg-brand-50 p-3 space-y-3">
@@ -168,14 +191,34 @@ export default function QuestionBuilder({ questions, setQuestions }) {
           )}
 
           {OPTION_TYPES.includes(q.type) && (
-            <div>
-              <label className="block text-xs text-gray-500 mb-1">선택지 (한 줄에 하나씩)</label>
-              <textarea
-                className="input-base"
-                rows={Math.min(8, Math.max(3, (q.options || []).length))}
-                value={(q.options || []).join('\n')}
-                onChange={(e) => update(i, { options: e.target.value.split('\n') })}
-              />
+            <div className="space-y-2">
+              <div>
+                <label className="block text-xs text-gray-500 mb-1">선택지 (한 줄에 하나씩)</label>
+                <textarea
+                  className="input-base"
+                  rows={Math.min(8, Math.max(3, (q.options || []).length))}
+                  value={(q.options || []).join('\n')}
+                  onChange={(e) => update(i, { options: e.target.value.split('\n') })}
+                />
+                {q.type !== 'dropdown' && (
+                  <p className="text-xs text-gray-400 mt-1">
+                    선택지 중 하나를 "기타" 또는 "기타:"로 입력하면 응답자가 직접 텍스트를 입력할 수 있어요.
+                  </p>
+                )}
+              </div>
+              {q.type === 'multi' && (
+                <div className="flex items-center gap-2">
+                  <label className="text-xs text-gray-500">최대 선택 개수</label>
+                  <input
+                    type="number"
+                    min="1"
+                    className="input-base w-24 text-sm"
+                    value={q.maxSelect || ''}
+                    onChange={(e) => update(i, { maxSelect: e.target.value ? Number(e.target.value) : 0 })}
+                    placeholder="제한 없음"
+                  />
+                </div>
+              )}
             </div>
           )}
 
@@ -242,14 +285,18 @@ export default function QuestionBuilder({ questions, setQuestions }) {
           )}
 
           <div className="flex items-center justify-between gap-3 text-sm border-t border-gray-100 pt-3">
-            <label className="flex items-center gap-2 text-gray-500">
-              <input
-                type="checkbox"
-                checked={q.required}
-                onChange={(e) => update(i, { required: e.target.checked })}
-              />
-              필수 응답
-            </label>
+            {q.type === 'section' ? (
+              <span />
+            ) : (
+              <label className="flex items-center gap-2 text-gray-500">
+                <input
+                  type="checkbox"
+                  checked={q.required}
+                  onChange={(e) => update(i, { required: e.target.checked })}
+                />
+                필수 응답
+              </label>
+            )}
             <div className="flex gap-2 text-gray-400">
               <button type="button" onClick={() => duplicate(i)} className="btn-secondary px-3 py-1.5 text-xs">
                 복사

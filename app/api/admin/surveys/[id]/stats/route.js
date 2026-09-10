@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { isAuthedRequest } from '@/lib/auth';
 import { SURVEYS_TAB, getConfigById, getSurveyResponses } from '@/lib/sheets';
+import { answerableQuestions } from '@/lib/answerableQuestions';
 
 export async function GET(request, { params }) {
   if (!(await isAuthedRequest(request))) return NextResponse.json({ error: '인증 필요' }, { status: 401 });
@@ -9,7 +10,7 @@ export async function GET(request, { params }) {
 
   const { rows } = await getSurveyResponses(survey);
 
-  const questionStats = survey.questions.map((q, qIndex) => {
+  const questionStats = answerableQuestions(survey.questions).map((q, qIndex) => {
     const colIndex = qIndex + 1; // column 0 is timestamp
     const answers = rows.map((r) => r[colIndex]).filter((v) => v !== undefined && v !== '');
 

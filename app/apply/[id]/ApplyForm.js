@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { cloneDefaultApplyTemplate } from '@/lib/defaultApply';
+import { isOtherOption, formatOtherAnswer, extractOtherText } from '@/lib/otherOption';
 
 function initialAnswers(questions) {
   return questions.reduce((acc, question) => {
@@ -36,54 +37,117 @@ function Field({ question, value, onChange }) {
     );
   }
 
-  function toggleMulti(option) {
-    if (selectedValues.includes(option)) {
-      onChange(selectedValues.filter((item) => item !== option));
-    } else {
-      onChange([...selectedValues, option]);
-    }
+  if (question.type === 'section') {
+    return (
+      <div className="pt-2 border-t border-gray-100 first:border-t-0 first:pt-0">
+        <h3 className="font-bold text-lg">{question.text}</h3>
+        {question.description && (
+          <p className="whitespace-pre-wrap text-sm text-gray-600 mt-1">{question.description}</p>
+        )}
+        {question.imageUrl && (
+          <img src={question.imageUrl} alt="" className="mt-3 max-h-80 w-full rounded-lg border object-contain bg-gray-50" />
+        )}
+      </div>
+    );
   }
 
   if (question.type === 'single') {
+    const isOtherSelected = isOtherOption(value);
     return (
       <div>
         <Label />
         <div className="grid sm:grid-cols-2 gap-2">
-          {(question.options || []).map((opt) => (
-            <button
-              type="button"
-              key={opt}
-              onClick={() => onChange(opt)}
-              className={`choice-btn text-center ${value === opt ? 'selected' : ''}`}
-            >
-              {opt}
-            </button>
-          ))}
+          {(question.options || []).map((opt) => {
+            const other = isOtherOption(opt);
+            const selected = other ? isOtherSelected : value === opt;
+            return (
+              <button
+                type="button"
+                key={opt}
+                onClick={() => onChange(other ? formatOtherAnswer(isOtherSelected ? extractOtherText(value) : '') : opt)}
+                className={`choice-btn text-center ${selected ? 'selected' : ''}`}
+              >
+                {other ? '기타' : opt}
+              </button>
+            );
+          })}
         </div>
+        {isOtherSelected && (
+          <input
+            className="input-base mt-2"
+            placeholder="직접 입력"
+            value={extractOtherText(value)}
+            onChange={(e) => onChange(formatOtherAnswer(e.target.value))}
+          />
+        )}
       </div>
     );
   }
   if (question.type === 'multi') {
+    const maxSelect = question.maxSelect || 0;
+    const atMax = maxSelect > 0 && selectedValues.length >= maxSelect;
+    const isChecked = (opt) => (isOtherOption(opt) ? selectedValues.some(isOtherOption) : selectedValues.includes(opt));
+    const otherValue = selectedValues.find(isOtherOption);
+
+    function toggle(opt) {
+      if (isOtherOption(opt)) {
+        if (isChecked(opt)) {
+          onChange(selectedValues.filter((v) => !isOtherOption(v)));
+        } else if (!atMax) {
+          onChange([...selectedValues, formatOtherAnswer('')]);
+        }
+        return;
+      }
+      if (selectedValues.includes(opt)) {
+        onChange(selectedValues.filter((item) => item !== opt));
+      } else if (!atMax) {
+        onChange([...selectedValues, opt]);
+      }
+    }
+    function setOtherText(text) {
+      onChange([...selectedValues.filter((v) => !isOtherOption(v)), formatOtherAnswer(text)]);
+    }
+
     return (
       <div>
         <Label />
+        {maxSelect > 0 && (
+          <p className="text-xs text-gray-400 mb-2">
+            최대 {maxSelect}개까지 선택할 수 있어요 ({selectedValues.length}/{maxSelect})
+          </p>
+        )}
         <div className="space-y-2">
-          {(question.options || []).map((opt) => (
-            <label
-              key={opt}
-              className={`flex items-center gap-3 cursor-pointer border rounded-lg p-3 ${
-                selectedValues.includes(opt) ? 'border-brand-500 bg-brand-50' : 'border-gray-200'
-              }`}
-            >
-              <input
-                type="checkbox"
-                checked={selectedValues.includes(opt)}
-                onChange={() => toggleMulti(opt)}
-                className="w-5 h-5"
-              />
-              <span className="font-medium">{opt}</span>
-            </label>
-          ))}
+          {(question.options || []).map((opt) => {
+            const other = isOtherOption(opt);
+            const checked = isChecked(opt);
+            const disabled = !checked && atMax;
+            return (
+              <div key={opt}>
+                <label
+                  className={`flex items-center gap-3 border rounded-lg p-3 ${
+                    checked ? 'border-brand-500 bg-brand-50' : 'border-gray-200'
+                  } ${disabled ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}`}
+                >
+                  <input
+                    type="checkbox"
+                    checked={checked}
+                    disabled={disabled}
+                    onChange={() => toggle(opt)}
+                    className="w-5 h-5"
+                  />
+                  <span className="font-medium">{other ? '기타' : opt}</span>
+                </label>
+                {other && checked && (
+                  <input
+                    className="input-base mt-2"
+                    placeholder="직접 입력"
+                    value={extractOtherText(otherValue)}
+                    onChange={(e) => setOtherText(e.target.value)}
+                  />
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
     );

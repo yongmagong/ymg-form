@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { SURVEYS_TAB, getConfigById, appendSurveyResponse } from '@/lib/sheets';
+import { answerableQuestions } from '@/lib/answerableQuestions';
 
 export async function POST(request, { params }) {
   const survey = await getConfigById(SURVEYS_TAB, params.id);
@@ -8,7 +9,7 @@ export async function POST(request, { params }) {
   const body = await request.json();
   const answers = body.answers || {};
 
-  for (const q of survey.questions) {
+  for (const q of answerableQuestions(survey.questions)) {
     const answer = answers[q.id];
     const missing = Array.isArray(answer) ? answer.length === 0 : !answer;
     if (q.required && missing) {
