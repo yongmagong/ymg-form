@@ -3,7 +3,6 @@ import LoginClient from './LoginClient';
 const requiredEnv = [
   'GOOGLE_OAUTH_CLIENT_ID',
   'GOOGLE_OAUTH_CLIENT_SECRET',
-  'ADMIN_ALLOWED_EMAILS',
   'NEXTAUTH_SECRET',
   'NEXTAUTH_URL',
 ];

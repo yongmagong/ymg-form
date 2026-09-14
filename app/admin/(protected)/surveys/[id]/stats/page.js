@@ -8,11 +8,15 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGri
 export default function SurveyStatsPage() {
   const { id } = useParams();
   const [data, setData] = useState(null);
+  const [sheetUrl, setSheetUrl] = useState('');
 
   useEffect(() => {
     fetch(`/api/admin/surveys/${id}/stats`)
       .then((r) => r.json())
       .then(setData);
+    fetch('/api/admin/sheet-link')
+      .then((r) => r.json())
+      .then((d) => setSheetUrl(d.url || ''));
   }, [id]);
 
   if (!data) return <p className="text-gray-400">불러오는 중...</p>;
@@ -29,6 +33,11 @@ export default function SurveyStatsPage() {
           <a href={`/api/admin/surveys/${id}/export`} className="btn-secondary">
             CSV 다운로드
           </a>
+          {sheetUrl && (
+            <a href={sheetUrl} target="_blank" rel="noreferrer" className="btn-secondary">
+              구글시트에서 보기
+            </a>
+          )}
           <Link href={`/admin/surveys/${id}`} className="btn-secondary">
             ← 편집으로
           </Link>

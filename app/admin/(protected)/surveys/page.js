@@ -102,6 +102,30 @@ export default function SurveysPage() {
     load();
   }
 
+  async function togglePublished(sv) {
+    setSurveys((prev) => prev.map((s) => (s.id === sv.id ? { ...s, published: !sv.published } : s)));
+    const res = await fetch(`/api/admin/surveys/${sv.id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ published: !sv.published }),
+    });
+    if (!res.ok) {
+      setError('공개 여부를 변경하지 못했습니다.');
+      load();
+    }
+  }
+
+  async function removeSurvey(sv) {
+    if (!confirm(`"${sv.title}" 설문조사를 삭제하시겠습니까? 시트에 이미 기록된 응답은 삭제되지 않습니다.`)) return;
+    setError('');
+    const res = await fetch(`/api/admin/surveys/${sv.id}`, { method: 'DELETE' });
+    if (!res.ok) {
+      setError('삭제하지 못했습니다.');
+      return;
+    }
+    load();
+  }
+
   function toggleSelected(id) {
     setSelectedIds((prev) => (prev.includes(id) ? prev.filter((sid) => sid !== id) : [...prev, id]));
   }
@@ -130,12 +154,12 @@ export default function SurveysPage() {
 
   const eventById = Object.fromEntries(events.map((ev) => [ev.id, ev]));
 
-  function SurveyList({ items, showCopy }) {
+  function SurveyList({ items, mine }) {
     if (items.length === 0) return <p className="text-gray-400 text-sm">목록이 없습니다.</p>;
     return (
       <div className="space-y-3">
         {items.map((sv) => (
-          <div key={sv.id} className="card flex items-center gap-3 hover:shadow-md transition-shadow">
+          <div key={sv.id} className="card flex flex-wrap items-center gap-3 hover:shadow-md transition-shadow">
             <input
               type="checkbox"
               checked={selectedIds.includes(sv.id)}
@@ -157,19 +181,25 @@ export default function SurveysPage() {
                 <span className="text-xs rounded-full bg-brand-50 text-brand-700 px-2 py-1">
                   담당 {sv.ownerName || sv.createdByName || '미지정'}
                 </span>
-                <span className={`text-xs rounded-full px-2 py-1 ${sv.published ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
-                  {sv.published ? '공개' : '비공개'}
-                </span>
               </div>
               <p className="text-xs text-gray-400 mt-1">질문 {sv.questions.length}개 · {new Date(sv.createdAt).toLocaleDateString('ko-KR')}</p>
             </Link>
-            {showCopy ? (
+            <div className="flex items-center gap-2 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
+              <label
+                className={`flex items-center gap-1.5 text-xs rounded-full px-2 py-1 cursor-pointer whitespace-nowrap ${sv.published ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-500'}`}
+              >
+                <input type="checkbox" checked={!!sv.published} onChange={() => togglePublished(sv)} className="w-3.5 h-3.5" />
+                {sv.published ? '공개' : '비공개'}
+              </label>
               <button type="button" onClick={() => copySurvey(sv.id)} className="btn-secondary text-xs whitespace-nowrap">
-                내 것으로 복사
+                복사
               </button>
-            ) : (
-              <span className="text-brand-600 text-sm font-medium whitespace-nowrap">자세히 →</span>
-            )}
+              {mine && (
+                <button type="button" onClick={() => removeSurvey(sv)} className="px-2 py-1.5 text-xs text-red-500 hover:underline whitespace-nowrap">
+                  삭제
+                </button>
+              )}
+            </div>
           </div>
         ))}
       </div>
@@ -265,11 +295,11 @@ export default function SurveysPage() {
       <div className="space-y-6">
         <section className="space-y-3">
           <h2 className="text-sm font-bold text-gray-600">내 설문조사</h2>
-          <SurveyList items={mySurveys} />
+          <SurveyList items={mySurveys} mine />
         </section>
         <section className="space-y-3">
           <h2 className="text-sm font-bold text-gray-600">동료 설문조사</h2>
-          <SurveyList items={otherSurveys} showCopy />
+          <SurveyList items={otherSurveys} />
         </section>
       </div>
     </div>

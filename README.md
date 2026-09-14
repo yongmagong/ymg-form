@@ -21,7 +21,7 @@ Next.js로 만든 신청서/설문조사 웹앱입니다. 응답은 지정한 �
 2. 애플리케이션 유형: **웹 애플리케이션**
 3. "승인된 리디렉션 URI"에 추가: `https://ymg-form.vercel.app/api/auth/callback/google` (실제 배포 주소가 다르면 그 주소로)
 4. 생성 후 나오는 **클라이언트 ID**와 **클라이언트 보안 비밀번호**를 아래 환경변수에 사용
-5. `ADMIN_ALLOWED_DOMAIN`에 조직 구글(Workspace) 도메인을 넣으면(기본값 `yongincommunity.org`) 그 도메인 계정이면 누구나 자동으로 로그인됩니다. 그 도메인이 아닌 개인 계정(Gmail 등)을 개별로 허용하고 싶을 때만 `ADMIN_ALLOWED_EMAILS`에 쉼표로 추가하세요
+5. `ADMIN_ALLOWED_DOMAIN`에 조직 구글(Workspace) 도메인을 넣으면(기본값 `yongincommunity.org`) 그 도메인 계정은 처음 로그인할 때 자동으로 관리자 목록(`/admin/staff`)에 등록됩니다. 그 외 개인 계정(Gmail 등)을 허용/차단하는 것은 배포 후 `/admin/staff` 화면에서 관리합니다 (환경변수 아님)
 
 ## 3. 처음 한 번만: 기록함 첨부파일 저장소 만들기 (Vercel Blob)
 
@@ -35,8 +35,7 @@ Next.js로 만든 신청서/설문조사 웹앱입니다. 응답은 지정한 �
 
 | 변수명 | 설명 |
 |---|---|
-| `ADMIN_ALLOWED_DOMAIN` | 이 구글 조직(Workspace) 도메인 계정이면 자동으로 관리자 로그인 허용 (기본값 `yongincommunity.org`) |
-| `ADMIN_ALLOWED_EMAILS` | 위 도메인이 아닌 개별 구글 이메일을 추가로 허용할 때 (쉼표로 구분) |
+| `ADMIN_ALLOWED_DOMAIN` | 이 구글 조직(Workspace) 도메인 계정이면 첫 로그인 시 자동으로 관리자 등록 (기본값 `yongincommunity.org`) |
 | `GOOGLE_OAUTH_CLIENT_ID` | 관리자 로그인용 OAuth 클라이언트 ID |
 | `GOOGLE_OAUTH_CLIENT_SECRET` | 관리자 로그인용 OAuth 클라이언트 보안 비밀번호 |
 | `NEXTAUTH_SECRET` | 로그인 세션 서명용 임의의 긴 문자열 |

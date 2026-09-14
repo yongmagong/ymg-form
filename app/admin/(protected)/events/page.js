@@ -139,15 +139,39 @@ export default function EventsPage() {
     load();
   }
 
+  async function togglePublished(ev) {
+    setEvents((prev) => prev.map((e) => (e.id === ev.id ? { ...e, published: !ev.published } : e)));
+    const res = await fetch(`/api/admin/events/${ev.id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ published: !ev.published }),
+    });
+    if (!res.ok) {
+      setError('공개 여부를 변경하지 못했습니다.');
+      load();
+    }
+  }
+
+  async function removeEvent(ev) {
+    if (!confirm(`"${ev.title}" 신청서를 삭제하시겠습니까? 시트에 이미 기록된 응답은 삭제되지 않습니다.`)) return;
+    setError('');
+    const res = await fetch(`/api/admin/events/${ev.id}`, { method: 'DELETE' });
+    if (!res.ok) {
+      setError('삭제하지 못했습니다.');
+      return;
+    }
+    load();
+  }
+
   const myEvents = events.filter((ev) => ev.ownerEmail && currentUser?.email && ev.ownerEmail === currentUser.email);
   const otherEvents = events.filter((ev) => !ev.ownerEmail || !currentUser?.email || ev.ownerEmail !== currentUser.email);
 
-  function EventList({ items, showCopy }) {
+  function EventList({ items, mine }) {
     if (items.length === 0) return <p className="text-gray-400 text-sm">목록이 없습니다.</p>;
     return (
       <div className="space-y-3">
         {items.map((ev) => (
-          <div key={ev.id} className="card flex items-center justify-between gap-4 hover:shadow-md transition-shadow">
+          <div key={ev.id} className="card flex flex-wrap items-center justify-between gap-3 hover:shadow-md transition-shadow">
             <Link href={`/admin/events/${ev.id}`} className="min-w-0 flex-1 block">
               <div className="flex flex-wrap items-center gap-2">
                 <p className="font-semibold truncate">{ev.title}</p>
@@ -157,22 +181,28 @@ export default function EventsPage() {
                 <span className="text-xs rounded-full bg-brand-50 text-brand-700 px-2 py-1">
                   담당 {ev.ownerName || ev.createdByName || '미지정'}
                 </span>
-                <span className={`text-xs rounded-full px-2 py-1 ${ev.published ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
-                  {ev.published ? '공개' : '비공개'}
-                </span>
               </div>
               <p className="text-xs text-gray-400 mt-1">
                 신청 {appliedCounts[ev.id] || 0}명{ev.capacity ? ` / 정원 ${ev.capacity}명` : ''} ·{' '}
                 {new Date(ev.createdAt).toLocaleDateString('ko-KR')}
               </p>
             </Link>
-            {showCopy ? (
+            <div className="flex items-center gap-2 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
+              <label
+                className={`flex items-center gap-1.5 text-xs rounded-full px-2 py-1 cursor-pointer whitespace-nowrap ${ev.published ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-500'}`}
+              >
+                <input type="checkbox" checked={!!ev.published} onChange={() => togglePublished(ev)} className="w-3.5 h-3.5" />
+                {ev.published ? '공개' : '비공개'}
+              </label>
               <button type="button" onClick={() => copyEvent(ev.id)} className="btn-secondary text-xs whitespace-nowrap">
-                내 것으로 복사
+                복사
               </button>
-            ) : (
-              <span className="text-brand-600 text-sm font-medium whitespace-nowrap">자세히 →</span>
-            )}
+              {mine && (
+                <button type="button" onClick={() => removeEvent(ev)} className="px-2 py-1.5 text-xs text-red-500 hover:underline whitespace-nowrap">
+                  삭제
+                </button>
+              )}
+            </div>
           </div>
         ))}
       </div>
@@ -371,11 +401,11 @@ export default function EventsPage() {
       <div className="space-y-6">
         <section className="space-y-3">
           <h2 className="text-sm font-bold text-gray-600">내 신청서</h2>
-          <EventList items={myEvents} />
+          <EventList items={myEvents} mine />
         </section>
         <section className="space-y-3">
           <h2 className="text-sm font-bold text-gray-600">동료 신청서</h2>
-          <EventList items={otherEvents} showCopy />
+          <EventList items={otherEvents} />
         </section>
       </div>
     </div>

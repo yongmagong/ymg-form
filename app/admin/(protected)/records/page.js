@@ -123,35 +123,48 @@ export default function RecordsPage() {
     }
   }
 
+  async function removeRecord(record) {
+    if (!confirm(`"${record.title}" 기록을 삭제하시겠습니까?`)) return;
+    setError('');
+    const res = await fetch(`/api/admin/records/${record.id}`, { method: 'DELETE' });
+    if (!res.ok) {
+      setError('삭제하지 못했습니다.');
+      return;
+    }
+    load();
+  }
+
   const myRecords = records.filter((r) => r.ownerEmail && currentUser?.email && r.ownerEmail === currentUser.email);
   const otherRecords = records.filter((r) => !r.ownerEmail || !currentUser?.email || r.ownerEmail !== currentUser.email);
 
-  function RecordList({ items, showCopy }) {
+  function RecordList({ items, mine }) {
     if (items.length === 0) return <p className="text-gray-400 text-sm">목록이 없습니다.</p>;
     return (
       <div className="space-y-3">
         {items.map((r) => (
-          <div key={r.id} className="card flex items-center justify-between gap-4 hover:shadow-md transition-shadow">
+          <div key={r.id} className="card flex flex-wrap items-center justify-between gap-3 hover:shadow-md transition-shadow">
             <Link href={`/admin/records/${r.id}`} className="min-w-0 flex-1 block">
               <div className="flex flex-wrap items-center gap-2">
                 <p className="font-semibold truncate">{r.title}</p>
               </div>
               <p className="text-xs text-gray-400 mt-1">{new Date(r.createdAt).toLocaleDateString('ko-KR')}</p>
             </Link>
-            <label
-              className={`flex items-center gap-1.5 text-xs rounded-full px-2 py-1 cursor-pointer whitespace-nowrap ${r.published ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-500'}`}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <input type="checkbox" checked={!!r.published} onChange={() => togglePublished(r)} className="w-3.5 h-3.5" />
-              {r.published ? '공개' : '비공개'}
-            </label>
-            {showCopy ? (
+            <div className="flex items-center gap-2 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
+              <label
+                className={`flex items-center gap-1.5 text-xs rounded-full px-2 py-1 cursor-pointer whitespace-nowrap ${r.published ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-500'}`}
+              >
+                <input type="checkbox" checked={!!r.published} onChange={() => togglePublished(r)} className="w-3.5 h-3.5" />
+                {r.published ? '공개' : '비공개'}
+              </label>
               <button type="button" onClick={() => copyRecord(r.id)} className="btn-secondary text-xs whitespace-nowrap">
-                내 것으로 복사
+                복사
               </button>
-            ) : (
-              <span className="text-brand-600 text-sm font-medium whitespace-nowrap">자세히 →</span>
-            )}
+              {mine && (
+                <button type="button" onClick={() => removeRecord(r)} className="px-2 py-1.5 text-xs text-red-500 hover:underline whitespace-nowrap">
+                  삭제
+                </button>
+              )}
+            </div>
           </div>
         ))}
       </div>
@@ -244,11 +257,11 @@ export default function RecordsPage() {
       <div className="space-y-6">
         <section className="space-y-3">
           <h2 className="text-sm font-bold text-gray-600">내 기록</h2>
-          <RecordList items={myRecords} />
+          <RecordList items={myRecords} mine />
         </section>
         <section className="space-y-3">
           <h2 className="text-sm font-bold text-gray-600">동료 기록</h2>
-          <RecordList items={otherRecords} showCopy />
+          <RecordList items={otherRecords} />
         </section>
       </div>
     </div>
