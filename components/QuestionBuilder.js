@@ -115,7 +115,7 @@ export default function QuestionBuilder({ questions, setQuestions }) {
           onDragStart={(e) => e.dataTransfer.setData('text/plain', String(i))}
           onDragOver={(e) => e.preventDefault()}
           onDrop={(e) => moveTo(Number(e.dataTransfer.getData('text/plain')), i)}
-          className="border border-gray-200 rounded-lg p-4 space-y-4 bg-white"
+          className={`border border-gray-200 rounded-lg p-4 space-y-4 ${i % 2 === 0 ? 'bg-white' : 'bg-amber-50'}`}
         >
           <div className="grid gap-3 md:grid-cols-[2rem_minmax(0,1fr)_9rem] items-start">
             <span className="text-gray-400 text-sm pt-3 cursor-grab" title="끌어서 순서 변경">
