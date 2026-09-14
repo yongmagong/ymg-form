@@ -9,7 +9,7 @@ export default function SiteHeader() {
             aria-hidden="true"
           />
           <span className="text-xs text-gray-400 tracking-wide">용인시 마을공동체지원센터</span>
-          <span className="text-3xl sm:text-4xl font-extrabold text-brand-700">용마공 교육행사</span>
+          <span className="text-3xl sm:text-4xl font-extrabold text-brand-700">용마공 클래스</span>
         </a>
         <nav className="flex flex-wrap items-center justify-center gap-5 text-sm font-medium text-gray-600 mt-3">
           <a href="/" className="hover:text-brand-600">
