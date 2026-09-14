@@ -35,11 +35,14 @@ export async function PUT(request, { params }) {
         defaultChecked: !!q.defaultChecked,
         lowLabel: q.lowLabel,
         highLabel: q.highLabel,
+        maxSelect: q.maxSelect || 0,
         required: q.required !== false,
       })) ?? existing.questions,
     linkedEventId: body.linkedEventId !== undefined ? body.linkedEventId : existing.linkedEventId,
     round: body.round !== undefined ? body.round : existing.round || '',
     published: body.published !== undefined ? !!body.published : existing.published ?? false,
+    recruitStart: body.recruitStart !== undefined ? body.recruitStart : existing.recruitStart || '',
+    recruitEnd: body.recruitEnd !== undefined ? body.recruitEnd : existing.recruitEnd || '',
   };
   validateConfigImages(updated);
   await upsertConfig(SURVEYS_TAB, updated);

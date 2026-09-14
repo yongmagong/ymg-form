@@ -204,7 +204,7 @@ function MultiButtons({ options, value, onChange, maxSelect }) {
   );
 }
 
-export default function SurveyRunner({ survey }) {
+export default function SurveyRunner({ survey, closed, closedLabel }) {
   const steps = useMemo(() => buildSteps(survey.questions), [survey.questions]);
   const [step, setStep] = useState(0); // 0 = intro, 1..N = steps, N+1 = done
   const [answers, setAnswers] = useState(() => initialAnswers(survey.questions));
@@ -307,9 +307,15 @@ export default function SurveyRunner({ survey }) {
         </div>
         <h1 className="text-xl font-bold">{survey.title}</h1>
         <p className="text-gray-500 whitespace-pre-wrap text-sm">{survey.intro}</p>
-        <button className="btn-primary w-full text-lg" onClick={() => setStep(1)}>
-          시작하기
-        </button>
+        {closed ? (
+          <p className="text-gray-400 font-semibold">
+            {closedLabel === '시작 전' ? '아직 설문 참여 기간이 아닙니다.' : '설문 참여 기간이 마감되었습니다.'}
+          </p>
+        ) : (
+          <button className="btn-primary w-full text-lg" onClick={() => setStep(1)}>
+            시작하기
+          </button>
+        )}
       </div>
     );
   }

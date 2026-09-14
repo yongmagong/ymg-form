@@ -1,4 +1,5 @@
 import { SURVEYS_TAB, getConfigById } from '@/lib/sheets';
+import { computeSurveyStatus } from '@/lib/eventStatus';
 import SiteHeader from '../../SiteHeader';
 import SurveyRunner from './SurveyRunner';
 
@@ -18,12 +19,14 @@ export default async function SurveyPage({ params }) {
     );
   }
 
+  const status = computeSurveyStatus(survey);
+
   return (
     <main className="min-h-screen">
       <SiteHeader />
       <div className="p-4 sm:p-8 flex items-center justify-center">
         <div className="max-w-lg w-full">
-          <SurveyRunner survey={survey} />
+          <SurveyRunner survey={survey} closed={status.closed} closedLabel={status.label} />
         </div>
       </div>
     </main>

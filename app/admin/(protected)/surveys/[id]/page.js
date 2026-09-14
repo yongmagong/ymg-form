@@ -13,6 +13,8 @@ export default function SurveyDetailPage() {
   const [ownerName, setOwnerName] = useState('');
   const [intro, setIntro] = useState('');
   const [round, setRound] = useState('');
+  const [recruitStart, setRecruitStart] = useState('');
+  const [recruitEnd, setRecruitEnd] = useState('');
   const [published, setPublished] = useState(false);
   const [linkedEventId, setLinkedEventId] = useState('');
   const [events, setEvents] = useState([]);
@@ -33,6 +35,8 @@ export default function SurveyDetailPage() {
     setOwnerName(data.survey.ownerName || data.survey.createdByName || '');
     setIntro(data.survey.intro);
     setRound(data.survey.round || '');
+    setRecruitStart(data.survey.recruitStart || '');
+    setRecruitEnd(data.survey.recruitEnd || '');
     setPublished(!!data.survey.published);
     setLinkedEventId(data.survey.linkedEventId || '');
     setQuestions(data.survey.questions);
@@ -53,6 +57,8 @@ export default function SurveyDetailPage() {
         ownerName,
         intro,
         round,
+        recruitStart,
+        recruitEnd,
         published,
         linkedEventId: linkedEventId || null,
         questions: questions.map((q) => ({ ...q, options: (q.options || []).map((o) => o.trim()).filter(Boolean) })),
@@ -116,6 +122,30 @@ export default function SurveyDetailPage() {
               ))}
             </select>
           </div>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <label className="block text-sm font-semibold mb-1">참여 시작일 (선택)</label>
+              <input
+                type="date"
+                className="input-base"
+                value={recruitStart}
+                onClick={(e) => e.currentTarget.showPicker?.()}
+                onChange={(e) => setRecruitStart(e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold mb-1">참여 마감일 (선택)</label>
+              <input
+                type="date"
+                className="input-base"
+                value={recruitEnd}
+                onClick={(e) => e.currentTarget.showPicker?.()}
+                onChange={(e) => setRecruitEnd(e.target.value)}
+              />
+            </div>
+          </div>
+          <p className="text-xs text-gray-400 -mt-3">비워두면 기간 제한 없이 계속 참여할 수 있습니다. 마감일 이후에는 자동으로 참여가 닫힙니다.</p>
+
           <div>
             <label className="block text-sm font-semibold mb-1">설문 소개</label>
             <textarea className="input-base min-h-28" rows={5} value={intro} onChange={(e) => setIntro(e.target.value)} />

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import QuestionBuilder from '@/components/QuestionBuilder';
 import { cloneDefaultSurveyTemplate } from '@/lib/defaultSurvey';
+import { computeSurveyStatus, formatRecruitPeriod } from '@/lib/eventStatus';
 
 export default function SurveysPage() {
   const [surveys, setSurveys] = useState(null);
@@ -13,6 +14,8 @@ export default function SurveysPage() {
   const [ownerName, setOwnerName] = useState('');
   const [intro, setIntro] = useState('');
   const [round, setRound] = useState('');
+  const [recruitStart, setRecruitStart] = useState('');
+  const [recruitEnd, setRecruitEnd] = useState('');
   const [published, setPublished] = useState(false);
   const [linkedEventId, setLinkedEventId] = useState('');
   const [events, setEvents] = useState([]);
@@ -63,6 +66,8 @@ export default function SurveysPage() {
         ownerName,
         intro,
         round,
+        recruitStart,
+        recruitEnd,
         published,
         linkedEventId: linkedEventId || null,
         questions: questions.map((q) => ({ ...q, options: (q.options || []).map((o) => o.trim()).filter(Boolean) })),
@@ -79,6 +84,8 @@ export default function SurveysPage() {
     setOwnerName(currentUser?.displayName || '');
     setIntro('');
     setRound('');
+    setRecruitStart('');
+    setRecruitEnd('');
     setPublished(false);
     setLinkedEventId('');
     setQuestions([]);
@@ -158,7 +165,10 @@ export default function SurveysPage() {
     if (items.length === 0) return <p className="text-gray-400 text-sm">목록이 없습니다.</p>;
     return (
       <div className="space-y-3">
-        {items.map((sv) => (
+        {items.map((sv) => {
+          const status = computeSurveyStatus(sv);
+          const period = formatRecruitPeriod(sv.recruitStart, sv.recruitEnd);
+          return (
           <div key={sv.id} className="card flex flex-wrap items-center gap-3 hover:shadow-md transition-shadow">
             <input
               type="checkbox"
@@ -181,6 +191,11 @@ export default function SurveysPage() {
                 <span className="text-xs rounded-full bg-brand-50 text-brand-700 px-2 py-1">
                   담당 {sv.ownerName || sv.createdByName || '미지정'}
                 </span>
+                {period && (
+                  <span className={`text-xs rounded-full px-2 py-1 ${status.closed ? 'bg-gray-100 text-gray-500' : 'bg-green-50 text-green-700'}`}>
+                    {status.label} · {period}
+                  </span>
+                )}
               </div>
               <p className="text-xs text-gray-400 mt-1">질문 {sv.questions.length}개 · {new Date(sv.createdAt).toLocaleDateString('ko-KR')}</p>
             </Link>
@@ -201,7 +216,8 @@ export default function SurveysPage() {
               )}
             </div>
           </div>
-        ))}
+          );
+        })}
       </div>
     );
   }
@@ -263,6 +279,30 @@ export default function SurveysPage() {
               어느 행사의 만족도 설문인지 지정합니다. 행사 편집 화면에서도 연결할 수 있습니다.
             </p>
           </div>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <label className="block text-sm font-semibold mb-1">참여 시작일 (선택)</label>
+              <input
+                type="date"
+                className="input-base"
+                value={recruitStart}
+                onClick={(e) => e.currentTarget.showPicker?.()}
+                onChange={(e) => setRecruitStart(e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold mb-1">참여 마감일 (선택)</label>
+              <input
+                type="date"
+                className="input-base"
+                value={recruitEnd}
+                onClick={(e) => e.currentTarget.showPicker?.()}
+                onChange={(e) => setRecruitEnd(e.target.value)}
+              />
+            </div>
+          </div>
+          <p className="text-xs text-gray-400 -mt-3">비워두면 기간 제한 없이 계속 참여할 수 있습니다. 마감일 이후에는 자동으로 참여가 닫힙니다.</p>
 
           <div>
             <label className="block text-sm font-semibold mb-1">설문 소개</label>

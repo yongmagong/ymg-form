@@ -2,10 +2,15 @@ import { NextResponse } from 'next/server';
 import { SURVEYS_TAB, getConfigById, appendSurveyResponse } from '@/lib/sheets';
 import { answerableQuestions } from '@/lib/answerableQuestions';
 import { isLikelyBot } from '@/lib/spamGuard';
+import { computeSurveyStatus } from '@/lib/eventStatus';
 
 export async function POST(request, { params }) {
   const survey = await getConfigById(SURVEYS_TAB, params.id);
   if (!survey) return NextResponse.json({ error: '존재하지 않는 설문입니다.' }, { status: 404 });
+
+  if (computeSurveyStatus(survey).closed) {
+    return NextResponse.json({ error: '설문 참여 기간이 아닙니다.' }, { status: 400 });
+  }
 
   const body = await request.json();
   if (isLikelyBot(body)) {

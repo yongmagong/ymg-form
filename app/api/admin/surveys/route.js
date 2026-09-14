@@ -69,11 +69,14 @@ export async function POST(request) {
         defaultChecked: !!q.defaultChecked,
         lowLabel: q.lowLabel,
         highLabel: q.highLabel,
+        maxSelect: q.maxSelect || 0,
         required: q.required !== false,
       })),
       linkedEventId: body.linkedEventId || null,
       round: body.round || '',
       published: body.published !== undefined ? !!body.published : false,
+      recruitStart: body.recruitStart || '',
+      recruitEnd: body.recruitEnd || '',
       createdAt: new Date().toISOString(),
     };
     validateConfigImages(survey);
