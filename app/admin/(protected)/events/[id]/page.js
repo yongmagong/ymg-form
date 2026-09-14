@@ -175,9 +175,14 @@ export default function EventDetailPage() {
             </div>
           </div>
 
-          <div className="rounded-lg border border-gray-100 bg-gray-50 p-3 text-sm">
-            현재 신청자 <strong>{appliedCount}명</strong>
-            {capacity ? ` / 정원 ${capacity}명` : ' (정원 제한 없음)'}
+          <div className="rounded-lg border border-gray-100 bg-gray-50 p-3 text-sm flex items-center justify-between gap-3 flex-wrap">
+            <span>
+              현재 신청자 <strong>{appliedCount}명</strong>
+              {capacity ? ` / 정원 ${capacity}명` : ' (정원 제한 없음)'}
+            </span>
+            <a href={`/api/admin/events/${id}/export`} className="btn-secondary text-xs px-3 py-1.5">
+              신청자 명단 CSV 다운로드
+            </a>
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">

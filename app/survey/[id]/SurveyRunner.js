@@ -211,6 +211,8 @@ export default function SurveyRunner({ survey }) {
   const [textDraft, setTextDraft] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [website, setWebsite] = useState('');
+  const [startedAt] = useState(() => Date.now());
 
   const total = steps.length;
   const currentStep = step >= 1 && step <= total ? steps[step - 1] : null;
@@ -277,7 +279,7 @@ export default function SurveyRunner({ survey }) {
     const res = await fetch(`/api/survey/${survey.id}/submit`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ answers: finalAnswers || answers }),
+      body: JSON.stringify({ answers: finalAnswers || answers, website, startedAt }),
     });
     setSubmitting(false);
     if (!res.ok) {
@@ -291,6 +293,18 @@ export default function SurveyRunner({ survey }) {
   if (step === 0) {
     return (
       <div className="card text-center space-y-4">
+        <div aria-hidden="true" style={{ position: 'absolute', left: '-9999px', width: 1, height: 1, overflow: 'hidden' }}>
+          <label htmlFor="website">웹사이트</label>
+          <input
+            id="website"
+            name="website"
+            type="text"
+            tabIndex={-1}
+            autoComplete="off"
+            value={website}
+            onChange={(e) => setWebsite(e.target.value)}
+          />
+        </div>
         <h1 className="text-xl font-bold">{survey.title}</h1>
         <p className="text-gray-500 whitespace-pre-wrap text-sm">{survey.intro}</p>
         <button className="btn-primary w-full text-lg" onClick={() => setStep(1)}>

@@ -25,9 +25,14 @@ export default function SurveyStatsPage() {
           <h1 className="text-xl font-bold">{data.survey.title} — 통계</h1>
           <p className="text-gray-500 text-sm mt-1">총 응답 수: {data.totalResponses}건</p>
         </div>
-        <Link href={`/admin/surveys/${id}`} className="btn-secondary">
-          ← 편집으로
-        </Link>
+        <div className="flex gap-2">
+          <a href={`/api/admin/surveys/${id}/export`} className="btn-secondary">
+            CSV 다운로드
+          </a>
+          <Link href={`/admin/surveys/${id}`} className="btn-secondary">
+            ← 편집으로
+          </Link>
+        </div>
       </div>
 
       {data.totalResponses === 0 && (

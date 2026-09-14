@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { EVENTS_TAB, SURVEYS_TAB, getConfigById, listConfig, appendApplyResponse, ensureAppliedCounts } from '@/lib/sheets';
 import { computeEventStatus } from '@/lib/eventStatus';
 import { answerableQuestions } from '@/lib/answerableQuestions';
+import { isLikelyBot } from '@/lib/spamGuard';
 
 export async function POST(request, { params }) {
   const event = await getConfigById(EVENTS_TAB, params.id);
@@ -14,6 +15,9 @@ export async function POST(request, { params }) {
   }
 
   const body = await request.json();
+  if (isLikelyBot(body)) {
+    return NextResponse.json({ error: '제출에 실패했습니다. 다시 시도해 주세요.' }, { status: 400 });
+  }
   const answers = body.answers || {};
   const questions = event.questions || [];
   const missing = answerableQuestions(questions).find((q) => {

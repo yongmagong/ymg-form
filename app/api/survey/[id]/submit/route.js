@@ -1,12 +1,16 @@
 import { NextResponse } from 'next/server';
 import { SURVEYS_TAB, getConfigById, appendSurveyResponse } from '@/lib/sheets';
 import { answerableQuestions } from '@/lib/answerableQuestions';
+import { isLikelyBot } from '@/lib/spamGuard';
 
 export async function POST(request, { params }) {
   const survey = await getConfigById(SURVEYS_TAB, params.id);
   if (!survey) return NextResponse.json({ error: '존재하지 않는 설문입니다.' }, { status: 404 });
 
   const body = await request.json();
+  if (isLikelyBot(body)) {
+    return NextResponse.json({ error: '제출에 실패했습니다. 다시 시도해 주세요.' }, { status: 400 });
+  }
   const answers = body.answers || {};
 
   for (const q of answerableQuestions(survey.questions)) {

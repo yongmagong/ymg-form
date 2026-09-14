@@ -226,6 +226,8 @@ export default function ApplyForm({ eventId, questions, closed }) {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [result, setResult] = useState(null);
+  const [website, setWebsite] = useState('');
+  const [startedAt] = useState(() => Date.now());
 
   if (closed) {
     return (
@@ -249,7 +251,7 @@ export default function ApplyForm({ eventId, questions, closed }) {
     const res = await fetch(`/api/apply/${eventId}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ answers }),
+      body: JSON.stringify({ answers, website, startedAt }),
     });
     setSubmitting(false);
     const data = await res.json();
@@ -281,6 +283,18 @@ export default function ApplyForm({ eventId, questions, closed }) {
 
   return (
     <form onSubmit={submit} className="card space-y-6">
+      <div aria-hidden="true" style={{ position: 'absolute', left: '-9999px', width: 1, height: 1, overflow: 'hidden' }}>
+        <label htmlFor="website">웹사이트</label>
+        <input
+          id="website"
+          name="website"
+          type="text"
+          tabIndex={-1}
+          autoComplete="off"
+          value={website}
+          onChange={(e) => setWebsite(e.target.value)}
+        />
+      </div>
       {applyQuestions.map((question) => (
         <Field
           key={question.id}
