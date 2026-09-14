@@ -42,7 +42,6 @@ export default async function Home() {
       <SiteHeader />
       <div className="max-w-6xl mx-auto px-4 py-8 space-y-12">
         <section className="space-y-4">
-          <h2 className="text-lg font-bold">교육행사</h2>
           <HomeCatalog events={published} />
         </section>
 
