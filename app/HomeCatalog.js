@@ -21,7 +21,7 @@ function EventCard({ event }) {
   return (
     <a
       href={`/apply/${event.id}`}
-      className="card block overflow-hidden hover:shadow-md transition-shadow p-0"
+      className="card block overflow-hidden hover:shadow-md transition-shadow p-0 rounded-lg border-gray-200"
     >
       <div className="relative aspect-[4/3] bg-gray-100">
         {event.imageUrl ? (
@@ -30,7 +30,7 @@ function EventCard({ event }) {
           <div className="w-full h-full flex items-center justify-center text-gray-300 text-sm">이미지 없음</div>
         )}
         <span
-          className={`absolute top-0 left-0 text-xs font-semibold rounded-tl-lg rounded-br-lg px-3 py-1.5 ${
+          className={`absolute top-0 left-0 text-xs font-semibold rounded-br-lg px-3 py-1.5 ${
             closed ? 'bg-gray-600 text-white' : 'bg-brand-600 text-white'
           }`}
         >
