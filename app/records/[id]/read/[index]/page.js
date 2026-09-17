@@ -54,9 +54,9 @@ export default async function RecordAttachmentReaderPage({ params }) {
 
           {kind === 'html' && (
             <iframe
-              src={attachment.url}
+              src={`/records/${record.id}/raw/${params.index}`}
               title={attachment.name}
-              sandbox="allow-scripts allow-same-origin"
+              sandbox="allow-scripts allow-popups"
               className="w-full h-[80vh] bg-white"
             />
           )}
