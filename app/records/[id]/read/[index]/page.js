@@ -21,6 +21,14 @@ export default async function RecordAttachmentReaderPage({ params }) {
   }
 
   const kind = attachmentKind(attachment);
+  const downloadHref = `/records/${record.id}/raw/${params.index}?download=1`;
+
+  // Reading material stays on screen; the PDF next to it is what people take
+  // home. Surfaced here because the records list links straight to this page.
+  const downloads = (record.attachments || [])
+    .map((a, i) => ({ ...a, index: i }))
+    .filter((a) => attachmentKind(a) === 'pdf');
+
   let mdHtml = '';
   if (kind === 'md') {
     try {
@@ -35,13 +43,23 @@ export default async function RecordAttachmentReaderPage({ params }) {
     <main className="min-h-screen bg-gray-100">
       <SiteHeader />
       <div className="max-w-4xl mx-auto px-4 py-6 space-y-4">
-        <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center justify-between gap-3 flex-wrap">
           <a href={`/records/${record.id}`} className="text-sm text-gray-500 hover:text-brand-600 truncate">
             ← {record.title}
           </a>
-          <a href={attachment.url} target="_blank" rel="noreferrer" className="text-sm text-brand-600 hover:underline whitespace-nowrap">
-            파일 다운로드
-          </a>
+          {downloads.length > 0 && (
+            <div className="flex items-center gap-2 flex-wrap">
+              {downloads.map((a) => (
+                <a
+                  key={a.index}
+                  href={`/records/${record.id}/raw/${a.index}?download=1`}
+                  className="btn-secondary text-sm whitespace-nowrap"
+                >
+                  ⬇ PDF 내려받기
+                </a>
+              ))}
+            </div>
+          )}
         </div>
 
         <div className="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
@@ -49,8 +67,6 @@ export default async function RecordAttachmentReaderPage({ params }) {
             <p className="text-xs text-gray-400">{KIND_LABELS[kind]}</p>
             <h1 className="font-bold text-lg">{attachment.name}</h1>
           </div>
-
-          {kind === 'pdf' && <iframe src={attachment.url} title={attachment.name} className="w-full h-[80vh]" />}
 
           {kind === 'html' && (
             <iframe
@@ -69,9 +85,12 @@ export default async function RecordAttachmentReaderPage({ params }) {
             />
           )}
 
-          {kind === 'other' && (
-            <div className="p-10 text-center text-gray-400 text-sm">
-              이 파일 형식은 미리보기를 지원하지 않습니다. 위의 "파일 다운로드"를 이용해 주세요.
+          {(kind === 'pdf' || kind === 'other') && (
+            <div className="p-10 text-center space-y-4">
+              <p className="text-gray-500 text-sm">내려받아 보실 수 있는 자료입니다.</p>
+              <a href={downloadHref} className="btn-primary inline-block">
+                ⬇ 내려받기
+              </a>
             </div>
           )}
         </div>

@@ -60,16 +60,24 @@ export default async function RecordDetailPublicPage({ params }) {
           {(record.attachments || []).length > 0 && (
             <div className="mt-6 border-t border-gray-100 pt-4 space-y-2">
               <p className="font-semibold text-sm text-gray-500 mb-1">첨부파일</p>
-              {record.attachments.map((a, i) => (
-                <a
-                  key={i}
-                  href={`/records/${record.id}/read/${i}`}
-                  className="flex items-center justify-between gap-2 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-brand-700 hover:bg-brand-50"
-                >
-                  <span>📖 {a.name}</span>
-                  <span className="text-xs text-gray-400 whitespace-nowrap">{KIND_LABELS[attachmentKind(a)]}</span>
-                </a>
-              ))}
+              {record.attachments.map((a, i) => {
+                const kind = attachmentKind(a);
+                const readable = kind === 'html' || kind === 'md';
+                return (
+                  <a
+                    key={i}
+                    href={readable ? `/records/${record.id}/read/${i}` : `/records/${record.id}/raw/${i}?download=1`}
+                    className="flex items-center justify-between gap-2 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-brand-700 hover:bg-brand-50"
+                  >
+                    <span>
+                      {readable ? '📖' : '⬇'} {a.name}
+                    </span>
+                    <span className="text-xs text-gray-400 whitespace-nowrap">
+                      {readable ? '읽기' : `${KIND_LABELS[kind]} 내려받기`}
+                    </span>
+                  </a>
+                );
+              })}
             </div>
           )}
         </div>
