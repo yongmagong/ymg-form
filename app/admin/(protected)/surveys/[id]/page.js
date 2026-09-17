@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import ShareLink from '@/components/ShareLink';
 import Link from 'next/link';
 import QuestionBuilder from '@/components/QuestionBuilder';
 
@@ -174,9 +175,7 @@ export default function SurveyDetailPage() {
           <a href={qrSrc} download={`${title}_설문_QR.png`} className="btn-primary block">
             QR 다운로드
           </a>
-          <a href={publicUrl} target="_blank" rel="noreferrer" className="text-xs text-brand-600 break-all block">
-            {publicUrl}
-          </a>
+          <ShareLink url={publicUrl} label="설문 주소 복사" />
         </div>
       </div>
     </div>

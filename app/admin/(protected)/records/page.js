@@ -2,11 +2,13 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { copyText } from '@/lib/copyText';
 import { uploadImageFile } from '@/lib/uploadImage';
 import AttachmentUploader from '@/components/AttachmentUploader';
 
 export default function RecordsPage() {
   const [records, setRecords] = useState(null);
+  const [copiedId, setCopiedId] = useState('');
   const [events, setEvents] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
   const [showForm, setShowForm] = useState(false);
@@ -123,6 +125,16 @@ export default function RecordsPage() {
     }
   }
 
+  async function copyShareLink(id) {
+    const ok = await copyText(`${window.location.origin}/r/${id}`);
+    if (!ok) {
+      setError('자동 복사가 막혀 있습니다. 기록을 열어 주소를 직접 복사해 주세요.');
+      return;
+    }
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(''), 1500);
+  }
+
   async function removeRecord(record) {
     if (!confirm(`"${record.title}" 기록을 삭제하시겠습니까?`)) return;
     setError('');
@@ -156,6 +168,11 @@ export default function RecordsPage() {
                 <input type="checkbox" checked={!!r.published} onChange={() => togglePublished(r)} className="w-3.5 h-3.5" />
                 {r.published ? '공개' : '비공개'}
               </label>
+              {r.published && (
+                <button type="button" onClick={() => copyShareLink(r.id)} className="btn-secondary text-xs whitespace-nowrap">
+                  {copiedId === r.id ? '복사됨' : '링크 복사'}
+                </button>
+              )}
               <button type="button" onClick={() => copyRecord(r.id)} className="btn-secondary text-xs whitespace-nowrap">
                 복사
               </button>

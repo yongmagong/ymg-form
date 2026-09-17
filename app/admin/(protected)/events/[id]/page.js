@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import ShareLink from '@/components/ShareLink';
 import QuestionBuilder from '@/components/QuestionBuilder';
 import { cloneDefaultApplyTemplate } from '@/lib/defaultApply';
 import { uploadImageFile } from '@/lib/uploadImage';
@@ -364,9 +365,7 @@ export default function EventDetailPage() {
             <a href={qrSrc} download={`${title}_신청서_QR.png`} className="btn-primary block">
               신청서 QR 다운로드
             </a>
-            <a href={publicUrl} target="_blank" rel="noreferrer" className="text-xs text-brand-600 break-all block">
-              {publicUrl}
-            </a>
+            <ShareLink url={publicUrl} label="신청서 주소 복사" />
           </div>
 
           {linkedSurveys.map((s) => (
@@ -379,9 +378,7 @@ export default function EventDetailPage() {
               <a href={s.qrSrc} download={`${s.title}_QR.png`} className="btn-primary block">
                 만족도 QR 다운로드
               </a>
-              <a href={s.url} target="_blank" rel="noreferrer" className="text-xs text-brand-600 break-all block">
-                {s.url}
-              </a>
+              <ShareLink url={s.url} label="설문 주소 복사" />
             </div>
           ))}
 

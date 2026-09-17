@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { uploadImageFile } from '@/lib/uploadImage';
 import AttachmentUploader from '@/components/AttachmentUploader';
+import ShareLink from '@/components/ShareLink';
 
 export default function RecordDetailPage() {
   const { id } = useParams();
@@ -22,7 +23,7 @@ export default function RecordDetailPage() {
   const [publicUrl, setPublicUrl] = useState('');
 
   useEffect(() => {
-    setPublicUrl(`${window.location.origin}/records/${id}`);
+    setPublicUrl(`${window.location.origin}/r/${id}`);
   }, [id]);
 
   async function load() {
@@ -207,9 +208,11 @@ export default function RecordDetailPage() {
 
         <div className="card space-y-3 text-center h-fit lg:sticky lg:top-6">
           <p className="font-semibold text-sm">공개 페이지 주소</p>
-          <a href={publicUrl} target="_blank" rel="noreferrer" className="text-xs text-brand-600 break-all block">
-            {publicUrl}
-          </a>
+          <ShareLink
+            url={publicUrl}
+            label="주소 복사"
+            note="카카오톡·문자로 보내거나 인쇄물에 넣을 때 쓰는 짧은 주소입니다. 공개 설정을 켜야 열립니다."
+          />
         </div>
       </div>
     </div>
