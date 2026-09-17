@@ -25,9 +25,9 @@ export async function GET(request, { params }) {
   const kind = attachmentKind(attachment);
   const download = new URL(request.url).searchParams.get('download') === '1';
 
-  // Without ?download=1 this only renders HTML inline. Everything else is a
-  // download, so there is no way to frame a PDF or an unknown file type here.
-  if (!download && kind !== 'html') return new Response('not found', { status: 404 });
+  // Without ?download=1 only HTML and PDF render in the reader. Anything else
+  // has no viewer, so there is no way to frame an unknown file type here.
+  if (!download && !['html', 'pdf'].includes(kind)) return new Response('not found', { status: 404 });
 
   let upstream;
   try {
@@ -42,13 +42,16 @@ export async function GET(request, { params }) {
     'Content-Type': CONTENT_TYPES[kind] || CONTENT_TYPES.other,
     'Cache-Control': 'public, max-age=300',
   };
-  if (download) {
-    // filename* carries the original Korean name. The plain filename is the
-    // ASCII fallback for clients that ignore filename*, so it gets stripped
-    // rather than percent-encoded — a readable name beats %EC%A3%BC%EB%AF%BC.
+  // filename* carries the original Korean name. The plain filename is the ASCII
+  // fallback for clients that ignore filename*, so it gets stripped rather than
+  // percent-encoded — a readable name beats %EC%A3%BC%EB%AF%BC. It is set even
+  // when viewing inline, because that is the name a browser's PDF viewer shows
+  // and the name it proposes if the reader saves from there.
+  if (download || kind === 'pdf') {
     const name = attachment.name || `attachment.${kind}`;
     const ascii = name.replace(/[^\x20-\x7E]/g, '').replace(/["\\]/g, '').trim() || `attachment.${kind}`;
-    headers['Content-Disposition'] = `attachment; filename="${ascii}"; filename*=UTF-8''${encodeURIComponent(name)}`;
+    const shown = `filename="${ascii}"; filename*=UTF-8''${encodeURIComponent(name)}`;
+    headers['Content-Disposition'] = `${download ? 'attachment' : 'inline'}; ${shown}`;
   }
   const length = upstream.headers.get('content-length');
   if (length) headers['Content-Length'] = length;

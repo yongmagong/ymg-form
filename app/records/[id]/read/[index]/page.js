@@ -21,7 +21,8 @@ export default async function RecordAttachmentReaderPage({ params }) {
   }
 
   const kind = attachmentKind(attachment);
-  const downloadHref = `/records/${record.id}/raw/${params.index}?download=1`;
+  const inlineHref = `/records/${record.id}/raw/${params.index}`;
+  const downloadHref = `${inlineHref}?download=1`;
 
   // Reading material stays on screen; the PDF next to it is what people take
   // home. Surfaced here because the records list links straight to this page.
@@ -55,7 +56,7 @@ export default async function RecordAttachmentReaderPage({ params }) {
                   href={`/records/${record.id}/raw/${a.index}?download=1`}
                   className="btn-secondary text-sm whitespace-nowrap"
                 >
-                  ⬇ PDF 내려받기
+                  ⬇ {downloads.length > 1 ? a.name : 'PDF 내려받기'}
                 </a>
               ))}
             </div>
@@ -85,7 +86,24 @@ export default async function RecordAttachmentReaderPage({ params }) {
             />
           )}
 
-          {(kind === 'pdf' || kind === 'other') && (
+          {/* No sandbox here on purpose: the browser's built-in PDF viewer is
+              what renders this, and sandboxing stops it from loading. */}
+          {kind === 'pdf' && (
+            <>
+              <iframe src={inlineHref} title={attachment.name} className="w-full h-[80vh] bg-gray-50" />
+              <div className="px-6 py-3 border-t border-gray-100 text-center">
+                <p className="text-xs text-gray-400">
+                  화면에 문서가 보이지 않으면{' '}
+                  <a href={inlineHref} target="_blank" rel="noreferrer" className="text-brand-600 hover:underline">
+                    새 탭에서 열기
+                  </a>
+                  를 눌러주세요. 휴대폰에서는 이 방법이 더 잘 보입니다.
+                </p>
+              </div>
+            </>
+          )}
+
+          {kind === 'other' && (
             <div className="p-10 text-center space-y-4">
               <p className="text-gray-500 text-sm">내려받아 보실 수 있는 자료입니다.</p>
               <a href={downloadHref} className="btn-primary inline-block">

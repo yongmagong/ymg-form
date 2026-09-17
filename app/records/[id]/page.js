@@ -62,7 +62,7 @@ export default async function RecordDetailPublicPage({ params }) {
               <p className="font-semibold text-sm text-gray-500 mb-1">첨부파일</p>
               {record.attachments.map((a, i) => {
                 const kind = attachmentKind(a);
-                const readable = kind === 'html' || kind === 'md';
+                const readable = ['html', 'md', 'pdf'].includes(kind);
                 return (
                   <a
                     key={i}
